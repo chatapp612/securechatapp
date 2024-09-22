@@ -1,51 +1,44 @@
-import React, { Component } from 'react';
-import logo from '../logo.png';
-import './App.css';
+import React, { useEffect, useState } from 'react';
+import Web3 from 'web3';
+import HelloWorldContract from '/Users/aditiwagh/helloworldapp/starter_kit/src/abis/HelloWorld.json'; // Ensure this path is correct
 
-class App extends Component {
-  render() {
+const App = () => {
+    const [message, setMessage] = useState('');
+    const [contract, setContract] = useState(null);
+    const [account, setAccount] = useState('');
+
+    useEffect(() => {
+        const init = async () => {
+            // Initialize web3
+            const web3 = new Web3(window.ethereum);
+            await window.ethereum.request({ method: 'eth_requestAccounts' });
+            const accounts = await web3.eth.getAccounts();
+            setAccount(accounts[0]);
+
+            // Initialize contract
+            const networkId = await web3.eth.net.getId();
+            const deployedNetwork = HelloWorldContract.networks[networkId];
+            const instance = new web3.eth.Contract(
+                HelloWorldContract.abi,
+                deployedNetwork && deployedNetwork.address,
+            );
+            setContract(instance);
+        };
+        init();
+    }, []);
+
+    const handlePrint = async () => {
+        const result = await contract.methods.print().call();
+        setMessage(result);
+    };
+
     return (
-      <div>
-        <nav className="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
-          <a
-            className="navbar-brand col-sm-3 col-md-2 mr-0"
-            href="http://www.dappuniversity.com/bootcamp"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Dapp University
-          </a>
-        </nav>
-        <div className="container-fluid mt-5">
-          <div className="row">
-            <main role="main" className="col-lg-12 d-flex text-center">
-              <div className="content mr-auto ml-auto">
-                <a
-                  href="http://www.dappuniversity.com/bootcamp"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <img src={logo} className="App-logo" alt="logo" />
-                </a>
-                <h1>Dapp University Starter Kit</h1>
-                <p>
-                  Edit <code>src/components/App.js</code> and save to reload.
-                </p>
-                <a
-                  className="App-link"
-                  href="http://www.dappuniversity.com/bootcamp"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  LEARN BLOCKCHAIN <u><b>NOW! </b></u>
-                </a>
-              </div>
-            </main>
-          </div>
+        <div>
+            <h1>Hello World DApp</h1>
+            <button onClick={handlePrint}>Print Message</button>
+            <p>{message}</p>
         </div>
-      </div>
     );
-  }
-}
+};
 
 export default App;
