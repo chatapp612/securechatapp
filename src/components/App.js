@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Web3 from 'web3';
-import HelloWorldContract from '/Users/aditiwagh/helloworldapp/starter_kit/src/abis/HelloWorld.json'; // Ensure this path is correct
 
+import HelloWorldContract from '../abis/HelloWorld.json'; //
 const App = () => {
     const [message, setMessage] = useState('');
     const [contract, setContract] = useState(null);
