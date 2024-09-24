@@ -19,7 +19,7 @@ module.exports = {
         timeoutBlocks: 200,
       }),
       network_id: 73799, // Volta's network ID
-      gas: 80000000, // Adjust gas limit as needed
+      gas: 8000000, // Adjust gas limit as needed
       gasPrice: 200000000000 // Adjust gas price if needed
     }
   },

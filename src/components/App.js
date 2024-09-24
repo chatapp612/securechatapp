@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Web3 from 'web3';
-import HelloWorldContract from '../abis/HelloWorld.json';
+import HelloWorldContract from '../abis/Hello.json';
 
 const App = () => {
     const [message, setMessage] = useState('');
@@ -11,15 +11,14 @@ const App = () => {
     useEffect(() => {
         const init = async () => {
             try {
-                // Connect to Volta network
-                const web3 = new Web3(new Web3.providers.HttpProvider("https://volta-rpc.energyweb.org"));
-                
-                // Request accounts from MetaMask
+                // Connect to MetaMask
+                const web3 = new Web3(window.ethereum);
                 await window.ethereum.request({ method: 'eth_requestAccounts' });
                 const accounts = await web3.eth.getAccounts();
                 setAccount(accounts[0]);
 
                 const networkId = await web3.eth.net.getId();
+                console.log("Network ID:", networkId);
                 const deployedNetwork = HelloWorldContract.networks[networkId];
 
                 if (deployedNetwork) {
@@ -29,7 +28,8 @@ const App = () => {
                     );
                     setContract(instance);
                 } else {
-                    throw new Error("Contract not deployed on this network");
+                    console.error("Contract not found on the network:", networkId);
+                    setError("Contract not deployed on this network");
                 }
             } catch (error) {
                 console.error("Initialization Error:", error);
@@ -47,14 +47,19 @@ const App = () => {
             return;
         }
 
+        console.log("Input String:", inputString); // Log the input string
+
         if (contract) {
             try {
                 const gasEstimate = await contract.methods.setString(inputString).estimateGas({ from: account });
-                const receipt = await contract.methods.setString(inputString).send({ from: account, gas: gasEstimate });
+                const receipt = await contract.methods.setString(inputString).send({ from: account, gas: gasEstimate + 100000 }); // Increased gas limit
                 console.log("Transaction successful:", receipt);
                 alert("String stored!");
             } catch (error) {
                 console.error("Transaction Error:", error);
+                if (error.data) {
+                    console.error("Error Data:", error.data);
+                }
                 alert("Transaction failed: " + error.message);
                 setError(error.message);
             }
