@@ -1,10 +1,16 @@
 pragma solidity ^0.5.0;
 
 contract HelloWorld {
-    constructor() public {
+    string private storedString;
+
+    event StringSet(string newString);
+
+    function setString(string memory newString) public {
+        storedString = newString;
+        emit StringSet(newString);
     }
 
-    function print() public pure returns (string memory) {
-        return "Hello World! First Simple Smart Contract";
+    function print() public view returns (string memory) {
+        return storedString;
     }
 }
