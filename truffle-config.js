@@ -12,14 +12,15 @@ module.exports = {
     volta: {
       provider: () => new HDWalletProvider({
         mnemonic: {
-          phrase: "bean shoulder vibrant flee shallow holiday vague little train crash marble glove" // Replace with your actual mnemonic
+          phrase: "agent snap farm there frog index lunch involve rug law cute giggle" // Replace with your actual mnemonic
         },
-        providerOrUrl: "https://volta-rpc.energyweb.org", 
-        pollingInterval: 15000,// Volta network RPC URL
+        providerOrUrl: "https://volta-rpc.energyweb.org",
+        pollingInterval: 15000, // Volta network RPC URL
+        timeoutBlocks: 200,
       }),
       network_id: 73799, // Volta's network ID
-      gas: 8000000, // Optional: adjust gas limit as needed
-      gasPrice: 20000000000 // Optional: adjust gas price if needed
+      gas: 8000000, // Adjust gas limit as needed
+      gasPrice: 200000000000 // Adjust gas price if needed
     }
   },
   contracts_directory: './src/contracts/',
@@ -32,6 +33,4 @@ module.exports = {
       }
     }
   }
-}
-
-// bean shoulder vibrant flee shallow holiday vague little train crash marble glove
+};
