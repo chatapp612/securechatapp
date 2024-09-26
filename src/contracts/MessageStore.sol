@@ -11,7 +11,7 @@ contract MessageStore {
 
     Message[] private messages;
 
-    event MessageSent(address recipient, string content, address sender);
+    event MessageSent(address indexed recipient, string content, address indexed sender);
 
     // Function to send a message to a specific recipient
     function sendMessage(address recipient, string memory content) public {
@@ -68,4 +68,48 @@ contract MessageStore {
 
         return receivedMessages;
     }
+
+    // New function to fetch messages from a specific sender to the logged-in account
+    function fetchMessagesFromSender(address sender) public view returns (Message[] memory) {
+        uint256 messageCount = 0;
+        for (uint256 i = 0; i < messages.length; i++) {
+            if (messages[i].sender == sender && messages[i].recipient == msg.sender) {
+                messageCount++;
+            }
+        }
+
+        Message[] memory messagesFromSender = new Message[](messageCount);
+        uint256 index = 0;
+
+        for (uint256 i = 0; i < messages.length; i++) {
+            if (messages[i].sender == sender && messages[i].recipient == msg.sender) {
+                messagesFromSender[index] = messages[i];
+                index++;
+            }
+        }
+
+        return messagesFromSender;
+    }
+
+    function fetchMessagesForSender(address sender) public view returns (Message[] memory) {
+    uint256 messageCount = 0;
+    for (uint256 i = 0; i < messages.length; i++) {
+        if (messages[i].sender == sender && messages[i].recipient == msg.sender) {
+            messageCount++;
+        }
+    }
+
+    Message[] memory senderMessages = new Message[](messageCount);
+    uint256 index = 0;
+
+    for (uint256 i = 0; i < messages.length; i++) {
+        if (messages[i].sender == sender && messages[i].recipient == msg.sender) {
+            senderMessages[index] = messages[i];
+            index++;
+        }
+    }
+
+    return senderMessages;
+}
+
 }

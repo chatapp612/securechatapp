@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import Web3 from 'web3';
 import MessageStoreContract from '../abis/MessageStore.json';
+import './App.css'; // Ensure to import your CSS file
 
 const App = () => {
     const [recipient, setRecipient] = useState('');
     const [message, setMessage] = useState('');
-    const [allMessages, setAllMessages] = useState([]); // Store both sent and received messages
+    const [allMessages, setAllMessages] = useState([]);
     const [contract, setContract] = useState(null);
     const [account, setAccount] = useState('');
     const [error, setError] = useState('');
+    const [senders, setSenders] = useState([]); // To store unique senders
+    const [selectedSender, setSelectedSender] = useState(null); // State for the selected sender
 
     useEffect(() => {
         const init = async () => {
@@ -36,7 +39,18 @@ const App = () => {
                 setError(error.message);
             }
         };
+
         init();
+
+        // Handle account changes
+        window.ethereum.on('accountsChanged', init);
+        // Handle network changes
+        window.ethereum.on('networkChanged', init);
+
+        return () => {
+            window.ethereum.removeListener('accountsChanged', init);
+            window.ethereum.removeListener('networkChanged', init);
+        };
     }, []);
 
     const sendMessage = async () => {
@@ -50,8 +64,8 @@ const App = () => {
                 const gasEstimate = await contract.methods.sendMessage(recipient, message).estimateGas({ from: account });
                 await contract.methods.sendMessage(recipient, message).send({ from: account, gas: gasEstimate + 100000 });
                 alert("Message sent!");
-                setMessage('');  // Clear message input
-                setRecipient('');  // Clear recipient input
+                setMessage('');
+                setRecipient('');
             } catch (error) {
                 console.error("Transaction Error:", error);
                 alert("Transaction failed: " + error.message);
@@ -66,18 +80,9 @@ const App = () => {
         if (contract) {
             try {
                 const receivedMessages = await contract.methods.fetchMessagesForLoggedInAccount().call({ from: account });
-                const sentMessages = await contract.methods.fetchSentMessages().call({ from: account });
-
-                // Combine received and sent messages
-                const combinedMessages = [...receivedMessages, ...sentMessages].map(msg => ({
-                    ...msg,
-                    timestamp: msg.timestamp * 1000 // Convert to milliseconds
-                }));
-
-                // Sort messages by timestamp in descending order
-                combinedMessages.sort((a, b) => a.timestamp - b.timestamp);
-
-                setAllMessages(combinedMessages);
+                // Populate senders list from received messages
+                const uniqueSenders = [...new Set(receivedMessages.map(msg => msg.sender))];
+                setSenders(uniqueSenders);
             } catch (error) {
                 console.error("Error fetching messages:", error);
                 alert("Error fetching messages: " + error.message);
@@ -88,41 +93,97 @@ const App = () => {
         }
     };
 
-    return (
-        <div>
-            <h1>MESSAGING APP</h1>
-            <input
-                type="text"
-                value={recipient}
-                onChange={(e) => setRecipient(e.target.value)}
-                placeholder="Enter Recipient Ethereum Address"
-            />
-            <input
-                type="text"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder="Enter Message"
-            />
-            <button onClick={sendMessage}>Send Message</button>
-            <button onClick={fetchMessages}>Fetch All Messages</button>
+    const fetchMessagesForSender = async (sender) => {
+        if (contract) {
+            try {
+                // Fetch messages sent by the selected sender to the logged-in account
+                const messagesFromSender = await contract.methods.fetchMessagesForSender(sender).call({ from: account });
+                // Fetch messages sent by the logged-in account to the selected sender
+                const messagesFromAccount = await contract.methods.fetchMessagesForSender(account).call({ from: account });
+    
+                const formattedMessages = [
+                    ...messagesFromSender.map(msg => ({
+                        ...msg,
+                        timestamp: msg.timestamp * 1000,
+                    })),
+                    ...messagesFromAccount.map(msg => ({
+                        ...msg,
+                        timestamp: msg.timestamp * 1000,
+                    }))
+                ];
+    
+                // Sort by descending timestamp
+                formattedMessages.sort((a, b) => b.timestamp - a.timestamp);
+                setAllMessages(formattedMessages);
+            } catch (error) {
+                console.error("Error fetching messages for sender:", error);
+                alert("Error fetching messages for sender: " + error.message);
+            }
+        } else {
+            alert("Contract not initialized.");
+        }
+    };
+    
 
-            <h2>All Messages:</h2>
-            <ul>
-                {allMessages.length > 0 ? (
-                    allMessages.map((msg, index) => (
-                        <li key={index}>
-                            <strong>{msg.sender === account ? 'To' : 'From'}:</strong> {msg.sender === account ? msg.recipient : msg.sender} <br />
-                            <strong>Message:</strong> {msg.content} <br />
-                            <strong>Timestamp:</strong> {new Date(msg.timestamp).toLocaleString()}
-                        </li>
-                    ))
-                ) : (
-                    <li>No messages found.</li>
-                )}
-            </ul>
-            {error && <p style={{ color: 'red' }}>{error}</p>}
+    return (
+        <div className="app">
+            <div className="sidebar">
+                <h3>Senders</h3>
+                <button onClick={fetchMessages} className="fetch-button">Fetch Senders</button>
+                <ul className="senders-list">
+                    {senders.length > 0 ? (
+                        senders.map((sender, index) => (
+                            <li key={index}>
+                                <button onClick={() => fetchMessagesForSender(sender)}>{sender}</button>
+                            </li>
+                        ))
+                    ) : (
+                        <li>No senders available.</li>
+                    )}
+                </ul>
+            </div>
+            <div className="chat-container"> {/* Right side for chat */}
+                <div className="chat-header">
+                    <h2>Messages for: {selectedSender || "Select a Sender"}</h2>
+                </div>
+                <div className="chat-window">
+                    <ul className="messages">
+                        {allMessages.length > 0 ? (
+                            allMessages.map((msg, index) => (
+                                <li key={index} className={`message ${msg.sender === account ? 'sent' : 'received'}`}>
+                                    <p>{msg.content}</p>
+                                    <span className="timestamp">{new Date(msg.timestamp).toLocaleTimeString()}</span>
+                                </li>
+                            ))
+                        ) : (
+                            <li>No messages found.</li>
+                        )}
+                    </ul>
+                </div>
+                <div className="input-area">
+                    <input
+                        type="text"
+                        value={recipient}
+                        onChange={(e) => setRecipient(e.target.value)}
+                        placeholder="Enter Recipient Ethereum Address"
+                        className="recipient-input"
+                    />
+                    
+                </div>
+                <div className="input-area">
+                    <input
+                        type="text"
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                        placeholder="Enter Message"
+                        className="message-input"
+                    />
+                    <button onClick={sendMessage} className="send-button">Send</button>
+                </div>
+                {error && <p style={{ color: 'red' }}>{error}</p>}
+            </div>
         </div>
     );
-};
+}
 
 export default App;

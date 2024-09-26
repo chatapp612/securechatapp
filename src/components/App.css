@@ -1,1 +1,101 @@
 /* Styles go here */
+.app {
+    font-family: Arial, sans-serif;
+    display: flex;
+    height: 100vh;
+    background-color: #e5ddd5;
+}
+
+.chat-header {
+    background-color: #0d7433; /* WhatsApp header color */
+    color: white;
+    padding: 15px;
+    text-align: center;
+}
+
+.chat-window {
+    flex: 1; /* Takes full available space on the right */
+    padding: 10px;
+    overflow-y: auto;
+    background-color: #ffffff;
+}
+
+.messages {
+    list-style-type: none;
+    padding: 0;
+}
+
+.message {
+    margin: 20px 0;
+    padding: 10px;
+    display:inline-block;
+    border-radius: 20px;
+    max-width: 70%;
+    position: relative;
+    word-wrap: break-word;
+    transform: translateZ(0); /* Enables hardware acceleration */
+    transition: transform 0.2s;
+}
+.send-button:hover,
+.fetch-button:hover {
+    background-color: #0c5d27; /* Darker shade on hover */
+}
+
+.sent {
+    background: linear-gradient(135deg, #3d633f, #66bb6a); 
+    
+    color:rgb(3, 3, 3);
+    margin-left: auto; /* Align sent messages to the right */
+}
+
+.received {
+    background-color: #7e708d6c;
+}
+
+.timestamp {
+    font-size: 10px;
+    color: #080808;
+    position: absolute;
+    bottom: -15px;
+    left: 50px;
+}
+
+.input-area {
+    display: flex;
+    padding: 10px;
+    background-color: #ffffff;
+}
+
+.recipient-input,
+.message-input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #0c0c0c;
+    background-color:#ffffff;
+    border-radius: 5px;
+    margin-right: 10px;
+}
+
+.send-button,
+.fetch-button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    background-color: #0e7433; /* WhatsApp color */
+    color: white;
+    cursor: pointer;
+    margin-left: 10px; /* Add some spacing */
+}
+
+/* New styles to position chat on the right half */
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 75%; /* Take half of the screen */
+}
+
+.blank-left {
+    width: 50%; /* Keep left side blank */
+    background-color: #ffffff; /* Same background color */
+}
