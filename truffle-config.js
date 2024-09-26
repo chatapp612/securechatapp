@@ -12,10 +12,10 @@ module.exports = {
     volta: {
       provider: () => new HDWalletProvider({
         mnemonic: {
-          phrase: "agent snap farm there frog index lunch involve rug law cute giggle" // Replace with your actual mnemonic
+          phrase: "about release tunnel casual pattern funny hen record speak example spin warfare" // Replace with your actual mnemonic
         },
         providerOrUrl: "https://volta-rpc.energyweb.org",
-        pollingInterval: 15000, // Volta network RPC URL
+        pollingInterval: 20000, // Volta network RPC URL
         timeoutBlocks: 200,
       }),
       network_id: 73799, // Volta's network ID
