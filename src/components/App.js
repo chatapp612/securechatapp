@@ -90,7 +90,7 @@ const App = () => {
 
     return (
         <div>
-            <h1>Message Store DApp</h1>
+            <h1>MESSAGING APP</h1>
             <input
                 type="text"
                 value={recipient}

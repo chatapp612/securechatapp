@@ -6,7 +6,7 @@ contract MessageStore {
         address recipient;
         string content;
         address sender;
-        uint256 timestamp; // New field for timestamp
+        uint256 timestamp;  // Add timestamp to track message time
     }
 
     Message[] private messages;
@@ -20,20 +20,35 @@ contract MessageStore {
             recipient: recipient,
             content: content,
             sender: msg.sender,
-            timestamp: now // Store the current timestamp
+            timestamp: now  // Capture the timestamp
         }));
         emit MessageSent(recipient, content, msg.sender);
     }
 
-    // Struct to hold message and sender information
-    struct MessageWithSender {
-        string content;
-        address sender;
-        uint256 timestamp; // Include timestamp in the struct
+    // Fetch messages sent by the logged-in account
+    function fetchSentMessages() public view returns (Message[] memory) {
+        uint256 sentCount = 0;
+        for (uint256 i = 0; i < messages.length; i++) {
+            if (messages[i].sender == msg.sender) {
+                sentCount++;
+            }
+        }
+
+        Message[] memory sentMessages = new Message[](sentCount);
+        uint256 index = 0;
+
+        for (uint256 i = 0; i < messages.length; i++) {
+            if (messages[i].sender == msg.sender) {
+                sentMessages[index] = messages[i];
+                index++;
+            }
+        }
+
+        return sentMessages;
     }
 
-    // Function to fetch messages for the logged-in Ethereum account along with sender info
-    function fetchMessagesForLoggedInAccount() public view returns (MessageWithSender[] memory) {
+    // Fetch messages received by the logged-in account
+    function fetchMessagesForLoggedInAccount() public view returns (Message[] memory) {
         uint256 messageCount = 0;
         for (uint256 i = 0; i < messages.length; i++) {
             if (messages[i].recipient == msg.sender) {
@@ -41,46 +56,16 @@ contract MessageStore {
             }
         }
 
-        MessageWithSender[] memory result = new MessageWithSender[](messageCount);
+        Message[] memory receivedMessages = new Message[](messageCount);
         uint256 index = 0;
 
         for (uint256 i = 0; i < messages.length; i++) {
             if (messages[i].recipient == msg.sender) {
-                result[index] = MessageWithSender({
-                    content: messages[i].content,
-                    sender: messages[i].sender,
-                    timestamp: messages[i].timestamp // Capture timestamp
-                });
+                receivedMessages[index] = messages[i];
                 index++;
             }
         }
 
-        return result;
-    }
-
-    // Function to fetch messages sent by the logged-in account
-    function fetchSentMessages() public view returns (MessageWithSender[] memory) {
-        uint256 messageCount = 0;
-        for (uint256 i = 0; i < messages.length; i++) {
-            if (messages[i].sender == msg.sender) {
-                messageCount++;
-            }
-        }
-
-        MessageWithSender[] memory result = new MessageWithSender[](messageCount);
-        uint256 index = 0;
-
-        for (uint256 i = 0; i < messages.length; i++) {
-            if (messages[i].sender == msg.sender) {
-                result[index] = MessageWithSender({
-                    content: messages[i].content,
-                    sender: messages[i].sender,
-                    timestamp: messages[i].timestamp // Capture timestamp
-                });
-                index++;
-            }
-        }
-
-        return result;
+        return receivedMessages;
     }
 }
