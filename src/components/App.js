@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Web3 from 'web3';
 import MessageStoreContract from '../abis/MessageStore.json';
-import './App.css'; // Ensure to import your CSS file
+import './App.css';
 
 const App = () => {
     const [recipient, setRecipient] = useState('');
@@ -10,8 +10,8 @@ const App = () => {
     const [contract, setContract] = useState(null);
     const [account, setAccount] = useState('');
     const [error, setError] = useState('');
-    const [senders, setSenders] = useState([]); // To store unique senders
-    const [selectedSender, setSelectedSender] = useState(null); // State for the selected sender
+    const [senders, setSenders] = useState([]);
+    const [selectedSender, setSelectedSender] = useState(null);
 
     useEffect(() => {
         const init = async () => {
@@ -42,9 +42,7 @@ const App = () => {
 
         init();
 
-        // Handle account changes
         window.ethereum.on('accountsChanged', init);
-        // Handle network changes
         window.ethereum.on('networkChanged', init);
 
         return () => {
@@ -66,6 +64,7 @@ const App = () => {
                 alert("Message sent!");
                 setMessage('');
                 setRecipient('');
+                fetchMessages(); // Refresh the senders after sending a message
             } catch (error) {
                 console.error("Transaction Error:", error);
                 alert("Transaction failed: " + error.message);
@@ -80,7 +79,6 @@ const App = () => {
         if (contract) {
             try {
                 const receivedMessages = await contract.methods.fetchMessagesForLoggedInAccount().call({ from: account });
-                // Populate senders list from received messages
                 const uniqueSenders = [...new Set(receivedMessages.map(msg => msg.sender))];
                 setSenders(uniqueSenders);
             } catch (error) {
@@ -96,53 +94,71 @@ const App = () => {
     const fetchMessagesForSender = async (sender) => {
         if (contract) {
             try {
-                // Fetch messages sent by the selected sender to the logged-in account
-                const messagesFromSender = await contract.methods.fetchMessagesForSender(sender).call({ from: account });
-                // Fetch messages sent by the logged-in account to the selected sender
-                const messagesFromAccount = await contract.methods.fetchMessagesForSender(account).call({ from: account });
+                // Fetch messages received from the selected sender to your account
+                const receivedMessages = await contract.methods.fetchMessagesForSender(sender).call({ from: account });
     
-                const formattedMessages = [
-                    ...messagesFromSender.map(msg => ({
-                        ...msg,
-                        timestamp: msg.timestamp * 1000,
-                    })),
-                    ...messagesFromAccount.map(msg => ({
-                        ...msg,
-                        timestamp: msg.timestamp * 1000,
-                    }))
-                ];
+                // Fetch messages sent from your account to the selected sender
+                const sentMessages = await contract.methods.fetchMessagesForSender(account).call({ from: sender });
     
-                // Sort by descending timestamp
-                formattedMessages.sort((a, b) => b.timestamp - a.timestamp);
-                setAllMessages(formattedMessages);
+                // Format received messages
+                const formattedReceivedMessages = receivedMessages.map(msg => ({
+                    ...msg,
+                    timestamp: msg.timestamp * 1000, // Convert to milliseconds for proper date formatting
+                    direction: 'received',  // Mark these as received messages
+                }));
+    
+                // Format sent messages
+                const formattedSentMessages = sentMessages.map(msg => ({
+                    ...msg,
+                    timestamp: msg.timestamp * 1000,  // Convert to milliseconds
+                    direction: 'sent',  // Mark these as sent messages
+                }));
+    
+                // Combine both sent and received messages into one array
+                const combinedMessages = [...formattedReceivedMessages, ...formattedSentMessages];
+    
+                // Sort the combined messages by timestamp in chronological order
+                combinedMessages.sort((a, b) => a.timestamp - b.timestamp);
+    
+                // Update state with combined and sorted messages
+                setAllMessages(combinedMessages);
+    
+                // Set the selected sender for display
+                setSelectedSender(sender);
             } catch (error) {
                 console.error("Error fetching messages for sender:", error);
                 alert("Error fetching messages for sender: " + error.message);
+                setError(error.message);
             }
         } else {
             alert("Contract not initialized.");
         }
     };
     
+    
 
     return (
         <div className="app">
+            {/* Sidebar with Contacts */}
             <div className="sidebar">
-                <h3>Senders</h3>
-                <button onClick={fetchMessages} className="fetch-button">Fetch Senders</button>
+                <h3>Contacts</h3>
+                <button onClick={fetchMessages} className="fetch-button">Show Contacts</button>
                 <ul className="senders-list">
                     {senders.length > 0 ? (
                         senders.map((sender, index) => (
-                            <li key={index}>
-                                <button onClick={() => fetchMessagesForSender(sender)}>{sender}</button>
+                            <li key={index} onClick={() => fetchMessagesForSender(sender)}>
+                                <img src="path_to_default_profile_picture" alt="Profile" />
+                                <span>{sender}</span>
                             </li>
                         ))
                     ) : (
-                        <li>No senders available.</li>
+                        <li>No contacts available.</li>
                     )}
                 </ul>
             </div>
-            <div className="chat-container"> {/* Right side for chat */}
+    
+            {/* Chat Area */}
+            <div className="chat-container">
                 <div className="chat-header">
                     <h2>Messages for: {selectedSender || "Select a Sender"}</h2>
                 </div>
@@ -150,9 +166,9 @@ const App = () => {
                     <ul className="messages">
                         {allMessages.length > 0 ? (
                             allMessages.map((msg, index) => (
-                                <li key={index} className={`message ${msg.sender === account ? 'sent' : 'received'}`}>
+                                <li key={index} className={`message ${msg.direction}`}>
                                     <p>{msg.content}</p>
-                                    <span className="timestamp">{new Date(msg.timestamp).toLocaleTimeString()}</span>
+                                    <span className="timestamp">{new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                 </li>
                             ))
                         ) : (
@@ -160,6 +176,8 @@ const App = () => {
                         )}
                     </ul>
                 </div>
+    
+                {/* Message Input Area */}
                 <div className="input-area">
                     <input
                         type="text"
@@ -168,7 +186,6 @@ const App = () => {
                         placeholder="Enter Recipient Ethereum Address"
                         className="recipient-input"
                     />
-                    
                 </div>
                 <div className="input-area">
                     <input
@@ -184,6 +201,7 @@ const App = () => {
             </div>
         </div>
     );
+    
 }
 
 export default App;

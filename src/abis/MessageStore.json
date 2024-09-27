@@ -11124,12 +11124,12 @@
     "73799": {
       "events": {},
       "links": {},
-      "address": "0x27EAb5A426D80468A2C8068DB42b3EC5209AF260",
-      "transactionHash": "0xca7a31fa694d38c1baa3ae5841e1173e2836c8ec0f0ef5ee6161456e222a2bd3"
+      "address": "0x8C1935890662A55751F6c1Ce415A11268EF5B97D",
+      "transactionHash": "0x8e1cfe05309edf08360ef355032da4fed31472c3a9864abbed7d6f2167d16375"
     }
   },
   "schemaVersion": "3.4.16",
-  "updatedAt": "2024-09-26T10:45:50.316Z",
+  "updatedAt": "2024-09-27T05:16:49.678Z",
   "networkType": "ethereum",
   "devdoc": {
     "methods": {}

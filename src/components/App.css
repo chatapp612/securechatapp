@@ -1,101 +1,217 @@
-/* Styles go here */
+/* General Styles */
 .app {
-    font-family: Arial, sans-serif;
+    font-family: 'Roboto', sans-serif;
     display: flex;
     height: 100vh;
-    background-color: #e5ddd5;
+    background-color: #f1f3f4;
 }
 
-.chat-header {
-    background-color: #0d7433; /* WhatsApp header color */
+/* Sidebar (Contacts List) */
+.sidebar {
+    background-color: #ececec;
+    width: 25%; /* Take 1/4th of the screen */
+    padding: 20px;
+    box-shadow: 2px 0px 5px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
+}
+
+.sidebar h3 {
+    margin-bottom: 20px;
+    font-weight: 500;
+    color: #333;
+}
+
+.fetch-button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 25px;
+    background-color: #090927d7;
     color: white;
-    padding: 15px;
-    text-align: center;
+    cursor: pointer;
+    margin-bottom: 20px;
+    width: 100%;
+    transition: background-color 0.3s;
 }
 
-.chat-window {
-    flex: 1; /* Takes full available space on the right */
-    padding: 10px;
-    overflow-y: auto;
+.fetch-button:hover {
+    background-color: #101042d7;
+}
+
+.senders-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.senders-list li {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    background-color: #fff;
+    cursor: pointer;
+    transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+.senders-list li:hover {
+    background-color: #f0f0f0;
+    box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.1);
+}
+
+.senders-list li img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+    border: 2px solid #090927d7;
+}
+
+/* Chat Window */
+.chat-container {
+    width: 75%; /* Take 3/4th of the screen */
+    display: flex;
+    flex-direction: column;
+    height: 100%;
     background-color: #ffffff;
 }
 
+.chat-header {
+    background-color: #101042d7;
+    color: white;
+    padding: 15px;
+    text-align: center;
+    border-radius: 5px 5px 0 0;
+}
+
+.chat-window {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    background-color: #ffffff;
+    border-left: 1px solid #e0e0e0;
+}
+
 .messages {
-    list-style-type: none;
+    list-style: none;
     padding: 0;
 }
 
 .message {
-    margin: 20px 0;
-    padding: 10px;
-    display:inline-block;
-    border-radius: 20px;
-    max-width: 70%;
+    padding: 8px 12px;
+    margin: 10px 0;
+    border-radius: 10px;
+    max-width: 60%;
     position: relative;
-    word-wrap: break-word;
-    transform: translateZ(0); /* Enables hardware acceleration */
-    transition: transform 0.2s;
-}
-.send-button:hover,
-.fetch-button:hover {
-    background-color: #0c5d27; /* Darker shade on hover */
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2), /* Main shadow */
+                0px 1px 10px rgba(0, 0, 0, 0.1); /* Lighter shadow for depth */
+    transition: box-shadow 0.3s; /* Smooth transition for shadows */
 }
 
-.sent {
-    background: linear-gradient(135deg, #3d633f, #66bb6a); 
+.message.sent {
+    background: #afaebbc4;/* Gradient from light green to subtle green */
+    text-align: right;
+    float: right;
+    clear: both;
+    animation: slideInRight 0.4s ease-out;
+    border-radius: 20px; /* Rounded corners */
+}
+
+.message.sent:hover {
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.3), /* Deeper shadow on hover */
+                0px 2px 20px rgba(0, 0, 0, 0.15);
+}
+
+.message.received {
+    background: #222261d7; /* Gradient from light blue to subtle blue */
+    text-align: left;
+    float: left;
+    clear: both;
+    color:white;
     
-    color:rgb(3, 3, 3);
-    margin-left: auto; /* Align sent messages to the right */
+    animation: slideInLeft 0.4s ease-out;
+    border-radius: 20px; /* Rounded corners */
 }
 
-.received {
-    background-color: #7e708d6c;
+.message.received:hover {
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.3), /* Deeper shadow on hover */
+                0px 2px 20px rgba(0, 0, 0, 0.15);
 }
 
 .timestamp {
-    font-size: 10px;
-    color: #080808;
-    position: absolute;
-    bottom: -15px;
-    left: 50px;
+    display: block;
+    font-size: 0.75em;
+    color: #000; /* Change to black for better visibility */
+    position:absolute; /* Change to relative for positioning within the message */
+    margin-top: 15px; /* Space between the message and the timestamp */
+    right: 0; /* Align to the right side */
+    opacity: 0.8; /* Slight transparency for a subtle look */
+    text-align: right; /* Ensure text aligns to the right */
 }
 
+
+/* Input Area */
 .input-area {
     display: flex;
-    padding: 10px;
-    background-color: #ffffff;
+    padding: 15px;
+    background-color: #f7f7f7;
+    border-top: 1px solid #e0e0e0;
+    border-radius: 0 0 5px 5px;
 }
 
 .recipient-input,
 .message-input {
     flex: 1;
     padding: 10px;
-    border: 1px solid #0c0c0c;
-    background-color:#ffffff;
-    border-radius: 5px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    border-radius: 25px;
     margin-right: 10px;
 }
 
-.send-button,
-.fetch-button {
-    padding: 10px 20px;
+.send-button {
+    padding: 12px 25px;
     border: none;
-    border-radius: 5px;
-    background-color: #0e7433; /* WhatsApp color */
+    border-radius: 25px;
+    background-color: #090927d7;
     color: white;
     cursor: pointer;
-    margin-left: 10px; /* Add some spacing */
+    transition: background-color 0.3s;
 }
 
-/* New styles to position chat on the right half */
-.chat-container {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    width: 75%; /* Take half of the screen */
+.send-button:hover {
+    background-color: #064e45;
+}
+.h2 {
+    font-size: 1.2em; /* Font size similar to WhatsApp */
+    color: #ffffff; /* White color for text */
+    margin: 0; /* Remove default margin */
+    padding: 10px 0; /* Add padding for vertical spacing */
+    text-align: left; /* Align text to the left */
+    font-weight: bold; /* Bold font weight */
+    letter-spacing: 0.5px; /* Slightly increase letter spacing */
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5); /* Subtle shadow for depth */
+    font-family: 'Helvetica Neue', 'Arial', sans-serif; /* Font similar to WhatsApp */
 }
 
-.blank-left {
-    width: 50%; /* Keep left side blank */
-    background-color: #ffffff; /* Same background color */
+/* Animations */
+@keyframes slideInRight {
+    0% {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    100% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideInLeft {
+    0% {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+    100% {
+        transform: translateX(0);
+        opacity: 1;
+    }
 }
