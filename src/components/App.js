@@ -147,7 +147,7 @@ const App = () => {
                     {senders.length > 0 ? (
                         senders.map((sender, index) => (
                             <li key={index} onClick={() => fetchMessagesForSender(sender)}>
-                                <img src="path_to_default_profile_picture" alt="Profile" />
+            
                                 <span>{sender}</span>
                             </li>
                         ))
