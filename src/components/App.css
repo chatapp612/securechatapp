@@ -61,7 +61,7 @@
 
 /* Chat Window */
 .chat-container {
-    width: 75%; /* Take 3/4th of the screen */
+    width: 60%; /* Take 3/4th of the screen */
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -69,11 +69,11 @@
 }
 
 .chat-header {
-    background-color: #101042d7;
-    color: white;
-    padding: 15px;
-    text-align: center;
-    border-radius: 5px 5px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: #f1f1f1;
 }
 
 .chat-window {
@@ -162,6 +162,18 @@
 }
 
 .send-button {
+    padding: 12px 25px;
+    border: none;
+    border-radius: 25px;
+    background-color: #090927d7;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+
+
+.addcontact-button {
     padding: 12px 25px;
     border: none;
     border-radius: 25px;

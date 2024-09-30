@@ -2,6 +2,9 @@ import React, { useEffect, useState } from 'react';
 import Web3 from 'web3';
 import MessageStoreContract from '../abis/MessageStore.json';
 import './App.css';
+import { BrowserRouter as Router, Route, Routes, useNavigate } from 'react-router-dom';
+
+import AddContactPage from './AddContactPage'; // new add contact page component
 
 const App = () => {
     const [recipient, setRecipient] = useState('');
@@ -12,6 +15,12 @@ const App = () => {
     const [error, setError] = useState('');
     const [senders, setSenders] = useState([]);
     const [selectedSender, setSelectedSender] = useState(null);
+
+    const navigate = useNavigate();
+
+    const goToAddContactPage = () => {
+        navigate('/add-contact');
+    };
 
     useEffect(() => {
         const init = async () => {
@@ -94,36 +103,25 @@ const App = () => {
     const fetchMessagesForSender = async (sender) => {
         if (contract) {
             try {
-                // Fetch messages received from the selected sender to your account
                 const receivedMessages = await contract.methods.fetchMessagesForSender(sender).call({ from: account });
-    
-                // Fetch messages sent from your account to the selected sender
                 const sentMessages = await contract.methods.fetchMessagesForSender(account).call({ from: sender });
-    
-                // Format received messages
+
                 const formattedReceivedMessages = receivedMessages.map(msg => ({
                     ...msg,
-                    timestamp: msg.timestamp * 1000, // Convert to milliseconds for proper date formatting
-                    direction: 'received',  // Mark these as received messages
+                    timestamp: msg.timestamp * 1000,
+                    direction: 'received',
                 }));
-    
-                // Format sent messages
+
                 const formattedSentMessages = sentMessages.map(msg => ({
                     ...msg,
-                    timestamp: msg.timestamp * 1000,  // Convert to milliseconds
-                    direction: 'sent',  // Mark these as sent messages
+                    timestamp: msg.timestamp * 1000,
+                    direction: 'sent',
                 }));
-    
-                // Combine both sent and received messages into one array
+
                 const combinedMessages = [...formattedReceivedMessages, ...formattedSentMessages];
-    
-                // Sort the combined messages by timestamp in chronological order
                 combinedMessages.sort((a, b) => a.timestamp - b.timestamp);
-    
-                // Update state with combined and sorted messages
+
                 setAllMessages(combinedMessages);
-    
-                // Set the selected sender for display
                 setSelectedSender(sender);
             } catch (error) {
                 console.error("Error fetching messages for sender:", error);
@@ -134,8 +132,6 @@ const App = () => {
             alert("Contract not initialized.");
         }
     };
-    
-    
 
     return (
         <div className="app">
@@ -147,7 +143,6 @@ const App = () => {
                     {senders.length > 0 ? (
                         senders.map((sender, index) => (
                             <li key={index} onClick={() => fetchMessagesForSender(sender)}>
-            
                                 <span>{sender}</span>
                             </li>
                         ))
@@ -156,11 +151,12 @@ const App = () => {
                     )}
                 </ul>
             </div>
-    
+
             {/* Chat Area */}
             <div className="chat-container">
                 <div className="chat-header">
                     <h2>Messages for: {selectedSender || "Select a Sender"}</h2>
+                    <button onClick={goToAddContactPage} className="addcontact-button">Add New Contact</button>
                 </div>
                 <div className="chat-window">
                     <ul className="messages">
@@ -176,7 +172,7 @@ const App = () => {
                         )}
                     </ul>
                 </div>
-    
+
                 {/* Message Input Area */}
                 <div className="input-area">
                     <input
@@ -201,7 +197,17 @@ const App = () => {
             </div>
         </div>
     );
-    
-}
+};
 
-export default App;
+const MainApp = () => {
+    return (
+        <Router>
+            <Routes>
+                <Route path="/" element={<App />} />
+                <Route path="/add-contact" element={<AddContactPage />} />
+            </Routes>
+        </Router>
+    );
+};
+
+export default MainApp;
