@@ -12,6 +12,7 @@
     width: 25%; /* Take 1/4th of the screen */
     padding: 20px;
     box-shadow: 2px 0px 5px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
+    overflow-y: auto; /* Scroll if content overflows */
 }
 
 .sidebar h3 {
@@ -58,13 +59,12 @@
     box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.1);
 }
 
-
 /* Chat Window */
 .chat-container {
-    width: 60%; /* Take 3/4th of the screen */
+    width: 75%; /* Corrected to take the remaining 3/4th of the screen */
     display: flex;
     flex-direction: column;
-    height: 100%;
+    height: 100%; /* Fill available height */
     background-color: #ffffff;
 }
 
@@ -77,16 +77,17 @@
 }
 
 .chat-window {
-    flex: 1;
+    flex: 1; /* Allow it to grow and fill space */
     padding: 20px;
     overflow-y: auto;
     background-color: #ffffff;
-    border-left: 1px solid #e0e0e0;
+    border-left: 1px solid #e0e0e0; /* Keeps the border consistent */
 }
 
 .messages {
     list-style: none;
     padding: 0;
+    margin: 0; /* Ensure no extra margin */
 }
 
 .message {
@@ -101,7 +102,7 @@
 }
 
 .message.sent {
-    background: #afaebbc4;/* Gradient from light green to subtle green */
+    background: #afaebbc4; /* Gradient from light green to subtle green */
     text-align: right;
     float: right;
     clear: both;
@@ -109,38 +110,26 @@
     border-radius: 20px; /* Rounded corners */
 }
 
-.message.sent:hover {
-    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.3), /* Deeper shadow on hover */
-                0px 2px 20px rgba(0, 0, 0, 0.15);
-}
-
 .message.received {
     background: #222261d7; /* Gradient from light blue to subtle blue */
     text-align: left;
     float: left;
     clear: both;
-    color:white;
-    
+    color: white;
     animation: slideInLeft 0.4s ease-out;
     border-radius: 20px; /* Rounded corners */
-}
-
-.message.received:hover {
-    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.3), /* Deeper shadow on hover */
-                0px 2px 20px rgba(0, 0, 0, 0.15);
 }
 
 .timestamp {
     display: block;
     font-size: 0.75em;
     color: #000; /* Change to black for better visibility */
-    position:absolute; /* Change to relative for positioning within the message */
+    position: absolute; /* Change to relative for positioning within the message */
     margin-top: 15px; /* Space between the message and the timestamp */
     right: 0; /* Align to the right side */
     opacity: 0.8; /* Slight transparency for a subtle look */
     text-align: right; /* Ensure text aligns to the right */
 }
-
 
 /* Input Area */
 .input-area {
@@ -161,7 +150,7 @@
     margin-right: 10px;
 }
 
-.send-button {
+.send-button, .addcontact-button {
     padding: 12px 25px;
     border: none;
     border-radius: 25px;
@@ -171,21 +160,10 @@
     transition: background-color 0.3s;
 }
 
-
-
-.addcontact-button {
-    padding: 12px 25px;
-    border: none;
-    border-radius: 25px;
-    background-color: #090927d7;
-    color: white;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-.send-button:hover {
+.send-button:hover, .addcontact-button:hover {
     background-color: #064e45;
 }
+
 .h2 {
     font-size: 1.2em; /* Font size similar to WhatsApp */
     color: #ffffff; /* White color for text */

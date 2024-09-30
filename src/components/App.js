@@ -1,10 +1,10 @@
+// App.js
 import React, { useEffect, useState } from 'react';
 import Web3 from 'web3';
 import MessageStoreContract from '../abis/MessageStore.json';
 import './App.css';
-import { BrowserRouter as Router, Route, Routes, useNavigate } from 'react-router-dom';
-
-import AddContactPage from './AddContactPage'; // new add contact page component
+import { useNavigate } from 'react-router-dom'; // Do not import BrowserRouter or Router here
+import AddContactPage from './AddContactPage'; // Import your AddContactPage component
 
 const App = () => {
     const [recipient, setRecipient] = useState('');
@@ -199,15 +199,4 @@ const App = () => {
     );
 };
 
-const MainApp = () => {
-    return (
-        <Router>
-            <Routes>
-                <Route path="/" element={<App />} />
-                <Route path="/add-contact" element={<AddContactPage />} />
-            </Routes>
-        </Router>
-    );
-};
-
-export default MainApp;
+export default App;
