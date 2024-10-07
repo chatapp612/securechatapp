@@ -1,20 +1,18 @@
-// App.js
 import React, { useEffect, useState } from 'react';
-import Web3 from 'web3';
-import MessageStoreContract from '../abis/MessageStore.json';
 import './App.css';
-import { useNavigate } from 'react-router-dom'; // Do not import BrowserRouter or Router here
-import AddContactPage from './AddContactPage'; // Import your AddContactPage component
+import { useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 
-const App = () => {
+const App = ({ web3, contract, error }) => {
     const [recipient, setRecipient] = useState('');
     const [message, setMessage] = useState('');
     const [allMessages, setAllMessages] = useState([]);
-    const [contract, setContract] = useState(null);
-    const [account, setAccount] = useState('');
-    const [error, setError] = useState('');
     const [senders, setSenders] = useState([]);
     const [selectedSender, setSelectedSender] = useState(null);
+    const location = useLocation();
+    
+    // Destructure account and username from location state
+    const { account, username } = location.state;
 
     const navigate = useNavigate();
 
@@ -23,51 +21,22 @@ const App = () => {
     };
 
     useEffect(() => {
-        const init = async () => {
-            try {
-                const web3 = new Web3(window.ethereum);
-                await window.ethereum.request({ method: 'eth_requestAccounts' });
-                const accounts = await web3.eth.getAccounts();
-                setAccount(accounts[0]);
-
-                const networkId = await web3.eth.net.getId();
-                const deployedNetwork = MessageStoreContract.networks[networkId];
-
-                if (deployedNetwork) {
-                    const instance = new web3.eth.Contract(
-                        MessageStoreContract.abi,
-                        deployedNetwork.address,
-                    );
-                    setContract(instance);
-                } else {
-                    console.error("Contract not found on the network:", networkId);
-                    setError("Contract not deployed on this network");
-                }
-            } catch (error) {
-                console.error("Initialization Error:", error);
-                setError(error.message);
-            }
-        };
-
-        init();
-
-        window.ethereum.on('accountsChanged', init);
-        window.ethereum.on('networkChanged', init);
-
-        return () => {
-            window.ethereum.removeListener('accountsChanged', init);
-            window.ethereum.removeListener('networkChanged', init);
-        };
-    }, []);
+        // Fetch messages when contract and account are ready
+        if (contract && account) {
+            fetchMessages(); // Fetch messages for the logged-in account
+        }
+    }, [contract, account]);
 
     const sendMessage = async () => {
         if (!recipient || !message) {
             alert("Both recipient and message fields are required.");
             return;
         }
-
+        console.log("hello reached before if");
+        console.log(contract);
         if (contract) {
             try {
+                console.log("hello reached inside if");
                 const gasEstimate = await contract.methods.sendMessage(recipient, message).estimateGas({ from: account });
                 await contract.methods.sendMessage(recipient, message).send({ from: account, gas: gasEstimate + 100000 });
                 alert("Message sent!");
@@ -77,9 +46,9 @@ const App = () => {
             } catch (error) {
                 console.error("Transaction Error:", error);
                 alert("Transaction failed: " + error.message);
-                setError(error.message);
             }
         } else {
+            console.log("hello reached in else");
             alert("Contract not initialized.");
         }
     };
@@ -87,13 +56,15 @@ const App = () => {
     const fetchMessages = async () => {
         if (contract) {
             try {
+                // Fetch messages for the logged-in account
                 const receivedMessages = await contract.methods.fetchMessagesForLoggedInAccount().call({ from: account });
+
+                // Extract unique senders from the messages
                 const uniqueSenders = [...new Set(receivedMessages.map(msg => msg.sender))];
                 setSenders(uniqueSenders);
             } catch (error) {
                 console.error("Error fetching messages:", error);
                 alert("Error fetching messages: " + error.message);
-                setError(error.message);
             }
         } else {
             alert("Contract not initialized.");
@@ -126,7 +97,6 @@ const App = () => {
             } catch (error) {
                 console.error("Error fetching messages for sender:", error);
                 alert("Error fetching messages for sender: " + error.message);
-                setError(error.message);
             }
         } else {
             alert("Contract not initialized.");
@@ -135,9 +105,12 @@ const App = () => {
 
     return (
         <div className="app">
+            {error && <p style={{ color: 'red' }}>{error}</p>}
             {/* Sidebar with Contacts */}
             <div className="sidebar">
                 <h3>Contacts</h3>
+                <h2>Welcome, {username}</h2>
+                <p>Your Ethereum address: {account}</p>
                 <button onClick={fetchMessages} className="fetch-button">Show Contacts</button>
                 <ul className="senders-list">
                     {senders.length > 0 ? (
@@ -193,7 +166,6 @@ const App = () => {
                     />
                     <button onClick={sendMessage} className="send-button">Send</button>
                 </div>
-                {error && <p style={{ color: 'red' }}>{error}</p>}
             </div>
         </div>
     );

@@ -2,6 +2,73 @@ pragma solidity ^0.5.0;
 pragma experimental ABIEncoderV2;
 
 contract MessageStore {
+
+    struct EncryptedContact {
+        string name;
+        bytes32 encryptedAddress;
+    }
+
+    // Mapping from user address to their contacts
+    mapping(address => EncryptedContact[]) private userContacts;
+
+    // Mapping to store usernames against Ethereum addresses
+    mapping(address => string) private users;
+
+    event ContactAdded(address indexed user, string contactName);
+    event ContactRemoved(address indexed user, string contactName);
+    event UserRegistered(address indexed user, string username);
+
+    // Function to add a user with a username
+  // Function to add a user with a username
+function registerUser(string memory username) public returns (bool) {
+    // Check if the user is already registered
+    if (bytes(users[msg.sender]).length > 0) {
+        // If the user is already registered, return false
+        return false; 
+    }
+
+    // If not registered, save the username
+    users[msg.sender] = username;
+
+    // Emit the UserRegistered event
+    emit UserRegistered(msg.sender, username);
+    
+    // Return true indicating successful registration
+    return true; 
+}
+
+
+    // Function to get the username of a logged-in user
+    function getUsername() public view returns (string memory) {
+        return users[msg.sender];
+    }
+
+    // Function to add a contact
+    function addContact(string memory contactName, bytes32 encryptedAddress) public {
+        EncryptedContact memory newContact = EncryptedContact({
+            name: contactName,
+            encryptedAddress: encryptedAddress
+        });
+        userContacts[msg.sender].push(newContact);
+        emit ContactAdded(msg.sender, contactName);
+    }
+
+    // Function to retrieve contacts for the logged-in account
+    function getContacts() public view returns (EncryptedContact[] memory) {
+        return userContacts[msg.sender];
+    }
+
+    // Function to remove a contact
+    function removeContact(uint256 index) public {
+        require(index < userContacts[msg.sender].length, "Invalid index.");
+        string memory contactName = userContacts[msg.sender][index].name;
+        userContacts[msg.sender][index] = userContacts[msg.sender][userContacts[msg.sender].length - 1];
+        userContacts[msg.sender].pop();
+        emit ContactRemoved(msg.sender, contactName);
+    }
+
+
+    
     struct Message {
         address recipient;
         string content;

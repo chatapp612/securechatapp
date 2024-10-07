@@ -150,7 +150,7 @@
     margin-right: 10px;
 }
 
-.send-button, .addcontact-button {
+.send-button, .addcontact-button ,.cancel-button ,.save-button ,.handlelogin-button,.handlesignup-button{
     padding: 12px 25px;
     border: none;
     border-radius: 25px;
@@ -160,7 +160,7 @@
     transition: background-color 0.3s;
 }
 
-.send-button:hover, .addcontact-button:hover {
+.send-button:hover, .addcontact-button:hover ,.cancel-button ,.save-button {
     background-color: #064e45;
 }
 
@@ -197,4 +197,74 @@
         transform: translateX(0);
         opacity: 1;
     }
+}
+/*add contact page*/
+
+/* Overlay Styles */
+.overlay {
+    position: fixed; /* Overlay takes full screen */
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+    display: flex; /* Use flexbox for centering */
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+}
+
+/* Box Styles */
+.box {
+    background: white; /* Box background color */
+    padding: 20px;
+    border-radius: 10px; /* Rounded corners */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); /* Soft shadow for depth */
+    text-align: center; /* Center text */
+    width: 400px; /* Set a fixed width */
+}
+
+/* Input Area */
+.add-contact-input-area {
+    display: flex;
+    margin-bottom: 15px; /* Spacing between input fields */
+}
+
+.name-input,
+.add-contact-recipient-input {
+    flex: 1;
+    padding: 12px; /* Increased padding for comfort */
+    border: 1px solid #ccc;
+    background-color: #fff;
+    border-radius: 25px;
+    margin-right: 10px;
+    transition: border-color 0.3s;
+}
+
+.name-input:focus,
+.add-contact-recipient-input:focus {
+    border-color: #090927d7; /* Highlight border on focus */
+}
+
+/* Button Group Styles */
+.button-group {
+    display: flex;
+    justify-content: space-between; /* Space between buttons */
+}
+
+/* Button Styles */
+.save-button,
+.cancel-button {
+    padding: 12px 25px;
+    border: none;
+    border-radius: 25px;
+    background-color: #090927d7; /* Same as the send button */
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s; /* Added transform for scale effect */
+}
+
+.save-button:hover,
+.cancel-button:hover {
+    background-color: #064e45; /* Change background on hover */
+    transform: scale(1.05); /* Slightly scale up on hover */
 }
