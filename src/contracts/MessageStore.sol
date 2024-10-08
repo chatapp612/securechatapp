@@ -11,36 +11,41 @@ contract MessageStore {
     // Mapping from user address to their contacts
     mapping(address => EncryptedContact[]) private userContacts;
 
-    // Mapping to store usernames against Ethereum addresses
+    // Mapping to store usernames and password hashes against Ethereum addresses
     mapping(address => string) private users;
+    mapping(address => bytes32) private passwordHashes;
 
     event ContactAdded(address indexed user, string contactName);
     event ContactRemoved(address indexed user, string contactName);
     event UserRegistered(address indexed user, string username);
 
-    // Function to add a user with a username
-  // Function to add a user with a username
-function registerUser(string memory username) public returns (bool) {
-    // Check if the user is already registered
-    if (bytes(users[msg.sender]).length > 0) {
-        // If the user is already registered, return false
-        return false; 
+    // Function to add a user with a username and password
+    function registerUser(string memory username, string memory password) public returns (bool) {
+        // Check if the user is already registered
+        if (bytes(users[msg.sender]).length > 0) {
+            // If the user is already registered, return false
+            return false; 
+        }
+
+        // If not registered, save the username and hashed password
+        users[msg.sender] = username;
+        passwordHashes[msg.sender] = keccak256(abi.encodePacked(password)); // Store hashed password
+
+        // Emit the UserRegistered event
+        emit UserRegistered(msg.sender, username);
+        
+        // Return true indicating successful registration
+        return true; 
     }
-
-    // If not registered, save the username
-    users[msg.sender] = username;
-
-    // Emit the UserRegistered event
-    emit UserRegistered(msg.sender, username);
-    
-    // Return true indicating successful registration
-    return true; 
-}
-
 
     // Function to get the username of a logged-in user
     function getUsername() public view returns (string memory) {
         return users[msg.sender];
+    }
+
+    // Function to validate the password for login
+    function validatePassword(string memory password) public view returns (bool) {
+        return passwordHashes[msg.sender] == keccak256(abi.encodePacked(password));
     }
 
     // Function to add a contact
@@ -67,8 +72,6 @@ function registerUser(string memory username) public returns (bool) {
         emit ContactRemoved(msg.sender, contactName);
     }
 
-
-    
     struct Message {
         address recipient;
         string content;
@@ -159,24 +162,23 @@ function registerUser(string memory username) public returns (bool) {
     }
 
     function fetchMessagesForSender(address sender) public view returns (Message[] memory) {
-    uint256 messageCount = 0;
-    for (uint256 i = 0; i < messages.length; i++) {
-        if (messages[i].sender == sender && messages[i].recipient == msg.sender) {
-            messageCount++;
+        uint256 messageCount = 0;
+        for (uint256 i = 0; i < messages.length; i++) {
+            if (messages[i].sender == sender && messages[i].recipient == msg.sender) {
+                messageCount++;
+            }
         }
-    }
 
-    Message[] memory senderMessages = new Message[](messageCount);
-    uint256 index = 0;
+        Message[] memory senderMessages = new Message[](messageCount);
+        uint256 index = 0;
 
-    for (uint256 i = 0; i < messages.length; i++) {
-        if (messages[i].sender == sender && messages[i].recipient == msg.sender) {
-            senderMessages[index] = messages[i];
-            index++;
+        for (uint256 i = 0; i < messages.length; i++) {
+            if (messages[i].sender == sender && messages[i].recipient == msg.sender) {
+                senderMessages[index] = messages[i];
+                index++;
+            }
         }
+
+        return senderMessages;
     }
-
-    return senderMessages;
-}
-
 }

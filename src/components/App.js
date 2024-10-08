@@ -1,29 +1,26 @@
+// src/components/App.js
 import React, { useEffect, useState } from 'react';
 import './App.css';
 import { useNavigate } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
+import { useWeb3 } from '../contexts/Web3Context.js'; // Import Web3 context hook
 
-const App = ({ web3, contract, error }) => {
+const App = () => {
     const [recipient, setRecipient] = useState('');
     const [message, setMessage] = useState('');
     const [allMessages, setAllMessages] = useState([]);
     const [senders, setSenders] = useState([]);
     const [selectedSender, setSelectedSender] = useState(null);
     const location = useLocation();
-    
-    // Destructure account and username from location state
-    const { account, username } = location.state;
-
     const navigate = useNavigate();
 
-    const goToAddContactPage = () => {
-        navigate('/add-contact');
-    };
+    const { contract, account } = useWeb3(); // Use contract and account from Web3Context
+    var username = (location.state && location.state.username) ? location.state.username : 'Guest';
+
 
     useEffect(() => {
-        // Fetch messages when contract and account are ready
         if (contract && account) {
-            fetchMessages(); // Fetch messages for the logged-in account
+            fetchMessages();
         }
     }, [contract, account]);
 
@@ -32,23 +29,20 @@ const App = ({ web3, contract, error }) => {
             alert("Both recipient and message fields are required.");
             return;
         }
-        console.log("hello reached before if");
-        console.log(contract);
+
         if (contract) {
             try {
-                console.log("hello reached inside if");
                 const gasEstimate = await contract.methods.sendMessage(recipient, message).estimateGas({ from: account });
                 await contract.methods.sendMessage(recipient, message).send({ from: account, gas: gasEstimate + 100000 });
                 alert("Message sent!");
                 setMessage('');
                 setRecipient('');
-                fetchMessages(); // Refresh the senders after sending a message
+                fetchMessages(); // Refresh senders after sending a message
             } catch (error) {
                 console.error("Transaction Error:", error);
                 alert("Transaction failed: " + error.message);
             }
         } else {
-            console.log("hello reached in else");
             alert("Contract not initialized.");
         }
     };
@@ -56,10 +50,7 @@ const App = ({ web3, contract, error }) => {
     const fetchMessages = async () => {
         if (contract) {
             try {
-                // Fetch messages for the logged-in account
                 const receivedMessages = await contract.methods.fetchMessagesForLoggedInAccount().call({ from: account });
-
-                // Extract unique senders from the messages
                 const uniqueSenders = [...new Set(receivedMessages.map(msg => msg.sender))];
                 setSenders(uniqueSenders);
             } catch (error) {
@@ -103,10 +94,12 @@ const App = ({ web3, contract, error }) => {
         }
     };
 
+    const goToAddContactPage = () => {
+        navigate('/add-contact');
+    };
+
     return (
         <div className="app">
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-            {/* Sidebar with Contacts */}
             <div className="sidebar">
                 <h3>Contacts</h3>
                 <h2>Welcome, {username}</h2>
@@ -125,7 +118,6 @@ const App = ({ web3, contract, error }) => {
                 </ul>
             </div>
 
-            {/* Chat Area */}
             <div className="chat-container">
                 <div className="chat-header">
                     <h2>Messages for: {selectedSender || "Select a Sender"}</h2>
@@ -146,7 +138,6 @@ const App = ({ web3, contract, error }) => {
                     </ul>
                 </div>
 
-                {/* Message Input Area */}
                 <div className="input-area">
                     <input
                         type="text"
@@ -155,8 +146,6 @@ const App = ({ web3, contract, error }) => {
                         placeholder="Enter Recipient Ethereum Address"
                         className="recipient-input"
                     />
-                </div>
-                <div className="input-area">
                     <input
                         type="text"
                         value={message}
