@@ -15,8 +15,8 @@ module.exports = {
           phrase: "about release tunnel casual pattern funny hen record speak example spin warfare" // Replace with your actual mnemonic
         },
         providerOrUrl: "https://volta-rpc.energyweb.org",
-        pollingInterval: 20000, // Volta network RPC URL
-        timeoutBlocks: 200,
+        pollingInterval: 25000, // Volta network RPC URL
+        timeoutBlocks: 219,
       }),
       network_id: 73799, // Volta's network ID
       gas: 8000000, // Adjust gas limit as needed
