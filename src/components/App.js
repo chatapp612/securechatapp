@@ -1,9 +1,58 @@
-// src/components/App.js
 import React, { useEffect, useState } from 'react';
 import './App.css';
 import { useNavigate } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
 import { useWeb3 } from '../contexts/Web3Context.js'; // Import Web3 context hook
+import crypto from 'crypto';
+
+// RC4 encryption/decryption class
+class RC4 {
+    constructor(key) {
+        this.key = key;
+        this.state = [];
+        this.i = 0;
+        this.j = 0;
+        this.initialize();
+    }
+
+    // Initialize the RC4 cipher with the key
+    initialize() {
+        const key = [...this.key].map((char) => char.charCodeAt(0)); // Convert key to an array of byte values
+        for (let i = 0; i < 256; i++) {
+            this.state[i] = i;
+        }
+        let j = 0;
+        for (let i = 0; i < 256; i++) {
+            j = (j + this.state[i] + key[i % key.length]) % 256;
+            [this.state[i], this.state[j]] = [this.state[j], this.state[i]]; // Swap values
+        }
+    }
+
+    // RC4 encryption or decryption
+    process(input) {
+        const output = [];
+        for (let k = 0; k < input.length; k++) {
+            this.i = (this.i + 1) % 256;
+            this.j = (this.j + this.state[this.i]) % 256;
+            [this.state[this.i], this.state[this.j]] = [this.state[this.j], this.state[this.i]];
+            const byte = this.state[(this.state[this.i] + this.state[this.j]) % 256];
+            output.push(input[k] ^ byte); // XOR with byte from the state
+        }
+        return output;
+    }
+
+    encrypt(message) {
+        const input = [...message].map((char) => char.charCodeAt(0)); // Convert message to byte array
+        const encrypted = this.process(input);
+        return Buffer.from(encrypted).toString('hex'); // Return as hex string
+    }
+
+    decrypt(encryptedMessage) {
+        const encryptedBytes = Buffer.from(encryptedMessage, 'hex');
+        const decrypted = this.process([...encryptedBytes]);
+        return String.fromCharCode(...decrypted); // Convert byte array back to string
+    }
+}
 
 const App = () => {
     const [recipient, setRecipient] = useState('');
@@ -17,12 +66,23 @@ const App = () => {
     const { contract, account } = useWeb3(); // Use contract and account from Web3Context
     var username = (location.state && location.state.username) ? location.state.username : 'Guest';
 
-
     useEffect(() => {
         if (contract && account) {
             fetchMessages();
         }
     }, [contract, account]);
+
+    const generateSessionKey = (recipientPublicKey) => {
+        const randomValue = crypto.randomBytes(16).toString('hex'); // Generate random 16-byte value
+        const sessionKey = `${recipientPublicKey}${randomValue}`; // Combine public key with random value
+        return sessionKey;
+    };
+
+    const encryptSessionKey = (sessionKey, recipientPublicKey) => {
+        const buffer = Buffer.from(sessionKey, 'utf-8');
+        const encrypted = crypto.publicEncrypt(recipientPublicKey, buffer);
+        return encrypted.toString('hex');
+    };
 
     const sendMessage = async () => {
         if (!recipient || !message) {
@@ -32,8 +92,28 @@ const App = () => {
 
         if (contract) {
             try {
-                const gasEstimate = await contract.methods.sendMessage(recipient, message).estimateGas({ from: account });
-                await contract.methods.sendMessage(recipient, message).send({ from: account, gas: gasEstimate + 100000 });
+                const recipientPublicKey = await contract.methods.getPublicKey(recipient).call({ from: account });
+                console.log("Recipient Address:", recipient);
+                console.log("Fetched Public Key:", recipientPublicKey);
+
+                // Generate session key using recipient's public key
+                const sessionKey = generateSessionKey(recipientPublicKey);
+                console.log("Generated Session Key:", sessionKey);
+
+                // Encrypt the message with the session key using RC4
+                const rc4 = new RC4(sessionKey);
+                const encryptedMessage = rc4.encrypt(message);
+                console.log("Encrypted Message:", encryptedMessage);
+
+                // Encrypt session key using recipient's public key
+                const encryptedSessionKey = encryptSessionKey(sessionKey, recipientPublicKey);
+                console.log("Encrypted Session Key:", encryptedSessionKey);
+
+                await contract.methods.storeSessionKey(recipient, encryptedSessionKey).send({ from: account });
+
+                // Send the encrypted message to the blockchain
+                const gasEstimate = await contract.methods.sendMessage(recipient, encryptedMessage).estimateGas({ from: account });
+                await contract.methods.sendMessage(recipient, encryptedMessage).send({ from: account, gas: gasEstimate + 100000 });
                 alert("Message sent!");
                 setMessage('');
                 setRecipient('');
@@ -82,6 +162,13 @@ const App = () => {
 
                 const combinedMessages = [...formattedReceivedMessages, ...formattedSentMessages];
                 combinedMessages.sort((a, b) => a.timestamp - b.timestamp);
+
+                // Decrypt messages using the session key
+                for (let msg of combinedMessages) {
+                    const sessionKey = await contract.methods.getSessionKey(sender).call({ from: account });
+                    const rc4 = new RC4(sessionKey);
+                    msg.content = rc4.decrypt(msg.content);
+                }
 
                 setAllMessages(combinedMessages);
                 setSelectedSender(sender);
@@ -150,7 +237,7 @@ const App = () => {
                         type="text"
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
-                        placeholder="Enter Message"
+                        placeholder="Enter your message"
                         className="message-input"
                     />
                     <button onClick={sendMessage} className="send-button">Send</button>

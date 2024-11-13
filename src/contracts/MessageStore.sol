@@ -14,29 +14,78 @@ contract MessageStore {
     // Mapping to store usernames and password hashes against Ethereum addresses
     mapping(address => string) private users;
     mapping(address => bytes32) private passwordHashes;
+    mapping(address => string) public publicKeys; // Public keys mapped to addresses
+
+        mapping(address => mapping(address => string)) private sessionKeys; // Mapping recipient to sender to session key
+
 
     event ContactAdded(address indexed user, string contactName);
     event ContactRemoved(address indexed user, string contactName);
     event UserRegistered(address indexed user, string username);
+    event PublicKeyUpdated(address indexed user, string publicKey); // Event for public key update
 
-    // Function to add a user with a username and password
-    function registerUser(string memory username, string memory password) public returns (bool) {
+    // Function to add a user with a username, password, and public key
+    function registerUser(string memory username, string memory publicKey, string memory password) public returns (bool) {
         // Check if the user is already registered
         if (bytes(users[msg.sender]).length > 0) {
             // If the user is already registered, return false
             return false; 
         }
 
-        // If not registered, save the username and hashed password
+        // If not registered, save the username, hashed password, and public key
         users[msg.sender] = username;
         passwordHashes[msg.sender] = keccak256(abi.encodePacked(password)); // Store hashed password
+        publicKeys[msg.sender] = publicKey; // Store public key
 
-        // Emit the UserRegistered event
+        // Emit the UserRegistered and PublicKeyUpdated events
         emit UserRegistered(msg.sender, username);
+        emit PublicKeyUpdated(msg.sender, publicKey);
         
         // Return true indicating successful registration
         return true; 
     }
+
+
+
+  function storeSessionKey(address recipient, string memory sessionKey) public {
+        sessionKeys[msg.sender][recipient] = sessionKey; // Store session key for sender-recipient pair
+    }
+
+    // Function to fetch session key
+    function getSessionKey(address sender, address recipient) public view returns (string memory) {
+        return sessionKeys[sender][recipient]; // Retrieve the stored session key
+    }
+
+    
+
+
+// Function to update the public key of the logged-in user
+function updatePublicKey(string memory publicKey) public returns (bool) {
+    // Check if the user is registered
+    require(bytes(users[msg.sender]).length > 0, "User is not registered.");
+
+    // Update the public key
+    publicKeys[msg.sender] = publicKey;
+
+    // Emit the PublicKeyUpdated event
+    emit PublicKeyUpdated(msg.sender, publicKey);
+
+    return true;
+}
+
+
+
+// Function to get the public key of a specific address
+function getPublicKey(address user) public view returns (string memory) {
+    return publicKeys[user];
+}
+
+
+
+
+    function getPasswordHash(address user) public view returns (bytes32) {
+    return passwordHashes[user];
+}
 
     // Function to get the username of a logged-in user
     function getUsername() public view returns (string memory) {

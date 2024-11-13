@@ -17,6 +17,8 @@
     "chai": "4.2.0",
     "chai-as-promised": "7.1.1",
     "chai-bignumber": "3.0.0",
+    "crypto-js": "^4.2.0",
+    "elliptic": "^6.6.1",
     "ethers": "^6.13.2",
     "gh-pages": "^6.1.1",
     "react": "16.8.4",
