@@ -72,24 +72,28 @@ const Home = () => {
   
   
     // Method to generate the public/private key pair and store them
-    const generateKeys = () => {
-        // Step 1: Generate a random 32-byte private key (256-bit)
-        const privateKeyBuffer = crypto.randomBytes(32); // 32 bytes = 256 bits
-        const privateKey = "0x" + privateKeyBuffer.toString("hex"); // Convert to Ethereum private key format
-        
-        // Step 2: Derive the public key using secp256k1 from the private key
-        const publicKeyBuffer = secp256k1.publicKeyCreate(privateKeyBuffer, true); // true for compressed public key
-        const publicKey = "0x" + publicKeyBuffer.toString("hex"); // Format the public key with "0x" prefix
+const generateKeys = () => {
+    // Step 1: Generate a random 32-byte private key (256-bit)
+    const privateKeyArray = new Uint8Array(32); // Create an empty array of 32 bytes
+    window.crypto.getRandomValues(privateKeyArray); // Fill the array with cryptographically secure random values
+
+    const privateKey = "0x" + Array.from(privateKeyArray).map(b => b.toString(16).padStart(2, '0')).join(''); // Convert to Ethereum private key format
     
-        console.log("Generated Private Key:", privateKey);
-        console.log("Derived Public Key:", publicKey);
-    
-        // Store the private key in localStorage (NOT recommended for production apps due to security concerns)
-        localStorage.setItem('privateKey', privateKey);
-    
-        // Return the public key to store it on the blockchain or use in the app
-        return publicKey;
-    };
+    // Step 2: Derive the public key using secp256k1 from the private key
+    const privateKeyBuffer = Buffer.from(privateKeyArray);
+    const publicKeyBuffer = secp256k1.publicKeyCreate(privateKeyBuffer, true); // true for compressed public key
+    const publicKey = "0x" + publicKeyBuffer.toString("hex"); // Format the public key with "0x" prefix
+
+    console.log("Generated Private Key:", privateKey);
+    console.log("Derived Public Key:", publicKey);
+
+    // Store the private key in localStorage (NOT recommended for production apps due to security concerns)
+    localStorage.setItem('privateKey', privateKey);
+
+    // Return the public key to store it on the blockchain or use in the app
+    return publicKey;
+};
+
     const handleSignUpSubmit = async () => {
         if (!username || !password) { // Validate username and password
             setError('Username and Password are required');

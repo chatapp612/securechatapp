@@ -79,6 +79,7 @@ const App = () => {
     };
 
     const encryptSessionKey = (sessionKey, recipientPublicKey) => {
+        console.log(recipientPublicKey);
         const buffer = Buffer.from(sessionKey, 'utf-8');
         const encrypted = crypto.publicEncrypt(recipientPublicKey, buffer);
         return encrypted.toString('hex');

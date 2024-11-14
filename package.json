@@ -1,5 +1,5 @@
 {
-  "homepage": "https://chatapp612.github.io/chatapp",
+  "homepage": "https://chatapp612.github.io/encryptedchatapp",
   "name": "eth-marketplace",
   "version": "0.1.0",
   "description": "An Ethereum Marketplace",
@@ -20,7 +20,7 @@
     "crypto-js": "^4.2.0",
     "elliptic": "^6.6.1",
     "ethers": "^6.13.2",
-    "gh-pages": "^6.1.1",
+    "js-sha256": "^0.11.0",
     "react": "16.8.4",
     "react-bootstrap": "1.0.0-beta.5",
     "react-dom": "16.8.4",
@@ -47,6 +47,7 @@
     "not op_mini all"
   ],
   "devDependencies": {
-    "@babel/register": "^7.24.6"
+    "@babel/register": "^7.24.6",
+    "gh-pages": "^6.2.0"
   }
 }
