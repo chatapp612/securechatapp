@@ -177,7 +177,7 @@ contract.events.PublicKeyUpdated({
                
                 console.log("Final")
                
-    
+                await contract.methods.updatePublicKey(publicKeyHex).send({ from: account });
                 
     
             } else {
