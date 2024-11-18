@@ -117,7 +117,7 @@ const handleSignUpSubmit = async () => {
         // Generate the public and private keys
         const publicKeyHex = await generateKeys(); // Await for the generated public key in hex format
 
-        console.log(publicKeyHex);
+        
 
         // Register the user on the blockchain with the username and public key
         await contract.methods.registerUser(username, publicKeyHex, password).send({ from: account });

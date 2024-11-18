@@ -115,14 +115,12 @@ const App = () => {
         // If the public key is in hexadecimal format, convert it to a binary array (buffer)
         const publicKeyBuffer = Buffer.from(publicKeyString, 'hex');
         
-        // Create a Forge public key object from the binary data
-        const publicKey = forge.pki.publicKeyFromPem(publicKeyBuffer.toString('utf8'));
-    
-        // Convert the key to PEM format
-        const pemFormattedPublicKey = forge.pki.publicKeyToPem(publicKey);
+        // We now assume publicKeyBuffer contains the raw binary of the public key (e.g., X.509 format)
+        const pemFormattedPublicKey = forge.pki.publicKeyToPem(forge.pki.publicKeyFromAsn1(forge.asn1.fromDer(publicKeyBuffer)));
         
         return pemFormattedPublicKey;
     }
+    
     
 
     const sendMessage = async () => {
