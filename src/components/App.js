@@ -67,37 +67,14 @@ const App = () => {
         }
     }, [contract, account]);
 
-    const generateSessionKey = (recipientPublicKey) => {
-        const randomValue = crypto.randomBytes(16).toString('hex');
-        return `${recipientPublicKey}${randomValue}`;
+    const generateSessionKey = () => {
+        return crypto.randomBytes(16).toString('hex');
     };
 
-    const convertPublicKeyToPem = (publicKeyHex) => {
-        if (!publicKeyHex || publicKeyHex.length === 0) {
-            console.error("Public key is empty.");
-            return null;
-        }
-
-        const publicKeyBuffer = Buffer.from(publicKeyHex, 'hex');
-        const base64PublicKey = publicKeyBuffer.toString('base64');
-
-        let pemFormattedKey = '-----BEGIN PUBLIC KEY-----\n';
-        for (let i = 0; i < base64PublicKey.length; i += 64) {
-            pemFormattedKey += base64PublicKey.slice(i, i + 64) + '\n';
-        }
-        pemFormattedKey += '-----END PUBLIC KEY-----';
-
-        return pemFormattedKey;
-    };
-
-    const encryptSessionKey = (sessionKey, recipientPublicKey) => {
+    const encryptSessionKey = (sessionKey, recipientPublicKeyHex) => {
         try {
-            if (!recipientPublicKey) {
-                console.error("Recipient public key is null or undefined.");
-                return;
-            }
             const buffer = Buffer.from(sessionKey, 'utf-8');
-            const encrypted = crypto.publicEncrypt(recipientPublicKey, buffer);
+            const encrypted = crypto.publicEncrypt({ key: Buffer.from(recipientPublicKeyHex, 'hex'), padding: crypto.constants.RSA_PKCS1_PADDING }, buffer);
             return encrypted.toString('hex');
         } catch (error) {
             console.error("Error in encrypting session key:", error);
@@ -112,20 +89,19 @@ const App = () => {
 
         if (contract) {
             try {
-                const recipientPublicKey = await contract.methods.getPublicKey(recipient).call({ from: account });
-
-                if (!recipientPublicKey) {
+                const recipientPublicKeyHex = await contract.methods.getPublicKey(recipient).call({ from: account });
+                console.log("publickey",recipientPublicKeyHex);
+                if (!recipientPublicKeyHex) {
                     console.error("No public key found for recipient.");
                     return;
                 }
-
-                const recipientPublicKeyPem = convertPublicKeyToPem(recipientPublicKey);
-
-                const sessionKey = generateSessionKey(recipientPublicKeyPem);
+                
+                const sessionKey = generateSessionKey();
+                console.log("sessionkey",sessionKey);
                 const rc4 = new RC4(sessionKey);
                 const encryptedMessage = rc4.encrypt(message);
-                
-                const encryptedSessionKey = encryptSessionKey(sessionKey, recipientPublicKeyPem);
+                console.log("encryptedmsg", encryptedMessage)
+                const encryptedSessionKey = encryptSessionKey(sessionKey, recipientPublicKeyHex);
 
                 await contract.methods.storeSessionKey(recipient, encryptedSessionKey).send({ from: account });
 
