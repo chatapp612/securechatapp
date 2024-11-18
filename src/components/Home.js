@@ -85,7 +85,7 @@ async function generateKeys() {
     const keyPair = await window.crypto.subtle.generateKey(
         {
             name: "RSA-OAEP",
-            modulusLength: 1024,
+            modulusLength: 2048,
             publicExponent: new Uint8Array([1, 0, 1]),
             hash: { name: "SHA-256" },
         },
@@ -134,7 +134,6 @@ const handleSignUpSubmit = async () => {
 };
 
 
-
     const handleLogin = async () => {
         if (!password) { // Validate password
             setError('Password is required for login');
@@ -169,8 +168,8 @@ const handleSignUpSubmit = async () => {
                 navigate('/app', { state: { account, username } });
                
                 console.log("Final")
-                // const publicKeyHex = await generateKeys();
-                // await contract.methods.updatePublicKey(publicKeyHex).send({ from: account });
+               
+    
                 
     
             } else {
