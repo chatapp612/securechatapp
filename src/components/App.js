@@ -2,11 +2,9 @@ import React, { useEffect, useState } from 'react';
 import './App.css';
 import { useNavigate } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
-import { useWeb3 } from '../contexts/Web3Context.js'; // Import Web3 context hook
+import { useWeb3 } from '../contexts/Web3Context.js';
 import crypto from 'crypto';
-const forge = require('node-forge');
 
-// RC4 encryption/decryption class
 class RC4 {
     constructor(key) {
         this.key = key;
@@ -16,20 +14,16 @@ class RC4 {
         this.initialize();
     }
 
-    // Initialize the RC4 cipher with the key
     initialize() {
-        const key = [...this.key].map((char) => char.charCodeAt(0)); // Convert key to an array of byte values
-        for (let i = 0; i < 256; i++) {
-            this.state[i] = i;
-        }
+        const key = [...this.key].map((char) => char.charCodeAt(0));
+        for (let i = 0; i < 256; i++) this.state[i] = i;
         let j = 0;
         for (let i = 0; i < 256; i++) {
             j = (j + this.state[i] + key[i % key.length]) % 256;
-            [this.state[i], this.state[j]] = [this.state[j], this.state[i]]; // Swap values
+            [this.state[i], this.state[j]] = [this.state[j], this.state[i]];
         }
     }
 
-    // RC4 encryption or decryption
     process(input) {
         const output = [];
         for (let k = 0; k < input.length; k++) {
@@ -37,21 +31,21 @@ class RC4 {
             this.j = (this.j + this.state[this.i]) % 256;
             [this.state[this.i], this.state[this.j]] = [this.state[this.j], this.state[this.i]];
             const byte = this.state[(this.state[this.i] + this.state[this.j]) % 256];
-            output.push(input[k] ^ byte); // XOR with byte from the state
+            output.push(input[k] ^ byte);
         }
         return output;
     }
 
     encrypt(message) {
-        const input = [...message].map((char) => char.charCodeAt(0)); // Convert message to byte array
+        const input = [...message].map((char) => char.charCodeAt(0));
         const encrypted = this.process(input);
-        return Buffer.from(encrypted).toString('hex'); // Return as hex string
+        return Buffer.from(encrypted).toString('hex');
     }
 
     decrypt(encryptedMessage) {
         const encryptedBytes = Buffer.from(encryptedMessage, 'hex');
         const decrypted = this.process([...encryptedBytes]);
-        return String.fromCharCode(...decrypted); // Convert byte array back to string
+        return String.fromCharCode(...decrypted);
     }
 }
 
@@ -64,8 +58,8 @@ const App = () => {
     const location = useLocation();
     const navigate = useNavigate();
 
-    const { contract, account } = useWeb3(); // Use contract and account from Web3Context
-    var username = (location.state && location.state.username) ? location.state.username : 'Guest';
+    const { contract, account } = useWeb3();
+    const username = (location.state && location.state.username) ? location.state.username : 'Guest';
 
     useEffect(() => {
         if (contract && account) {
@@ -74,103 +68,73 @@ const App = () => {
     }, [contract, account]);
 
     const generateSessionKey = (recipientPublicKey) => {
-        const randomValue = crypto.randomBytes(16).toString('hex'); // Generate random 16-byte value
-        const sessionKey = `${recipientPublicKey}${randomValue}`; // Combine public key with random value
-        return sessionKey;
+        const randomValue = crypto.randomBytes(16).toString('hex');
+        return `${recipientPublicKey}${randomValue}`;
+    };
+
+    const convertPublicKeyToPem = (publicKeyHex) => {
+        if (!publicKeyHex || publicKeyHex.length === 0) {
+            console.error("Public key is empty.");
+            return null;
+        }
+
+        const publicKeyBuffer = Buffer.from(publicKeyHex, 'hex');
+        const base64PublicKey = publicKeyBuffer.toString('base64');
+
+        let pemFormattedKey = '-----BEGIN PUBLIC KEY-----\n';
+        for (let i = 0; i < base64PublicKey.length; i += 64) {
+            pemFormattedKey += base64PublicKey.slice(i, i + 64) + '\n';
+        }
+        pemFormattedKey += '-----END PUBLIC KEY-----';
+
+        return pemFormattedKey;
     };
 
     const encryptSessionKey = (sessionKey, recipientPublicKey) => {
         try {
-            // Convert the session key to a buffer (utf-8 encoding)
-            const buffer = Buffer.from(sessionKey, 'utf-8');
-    
-            // Check if recipientPublicKey is valid
             if (!recipientPublicKey) {
                 console.error("Recipient public key is null or undefined.");
                 return;
             }
-    
-            // The public key should be in PEM format, so ensure it is a string and valid.
-            if (typeof recipientPublicKey !== 'string' || !recipientPublicKey.startsWith('-----BEGIN PUBLIC KEY-----')) {
-                console.error("Invalid public key format. The key must be in PEM format.");
-                return;
-            }
-    
-            // Encrypt the session key using the recipient's public key
-            const encrypted = crypto.publicEncrypt(
-                recipientPublicKey,  // PEM format public key
-                buffer               // Session key buffer
-            );
-    
-            // Return the encrypted session key in hex format
+            const buffer = Buffer.from(sessionKey, 'utf-8');
+            const encrypted = crypto.publicEncrypt(recipientPublicKey, buffer);
             return encrypted.toString('hex');
         } catch (error) {
             console.error("Error in encrypting session key:", error);
         }
     };
-    
-    
-    
-    function convertPublicKeyToPem(publicKeyHex) {
-        // Convert the hexadecimal string to a binary buffer
-        const publicKeyBuffer = Buffer.from(publicKeyHex, 'hex');
-        
-        // Convert the buffer to a base64 string
-        const base64PublicKey = publicKeyBuffer.toString('base64');
-        
-        // Split the base64 string into lines of 64 characters each for PEM compliance
-        const chunkSize = 64;
-        let pemFormattedKey = '-----BEGIN PUBLIC KEY-----\n';
-        for (let i = 0; i < base64PublicKey.length; i += chunkSize) {
-            pemFormattedKey += base64PublicKey.slice(i, i + chunkSize) + '\n';
-        }
-        pemFormattedKey += '-----END PUBLIC KEY-----';
-    console.log(pemFormattedKey);
-        return pemFormattedKey;
-    }
-    
-    
 
     const sendMessage = async () => {
         if (!recipient || !message) {
             alert("Both recipient and message fields are required.");
             return;
         }
-    
+
         if (contract) {
             try {
-                // Fetch the recipient's public key in hex format
                 const recipientPublicKey = await contract.methods.getPublicKey(recipient).call({ from: account });
-                console.log("Recipient Address:", recipient);
-                console.log("Fetched Public Key:", recipientPublicKey);
-    
-                // Convert the public key from hex to PEM format
+
+                if (!recipientPublicKey) {
+                    console.error("No public key found for recipient.");
+                    return;
+                }
+
                 const recipientPublicKeyPem = convertPublicKeyToPem(recipientPublicKey);
-                console.log("Converted Public Key to PEM format:", recipientPublicKeyPem);
-    
-                // Generate session key using recipient's PEM public key
+
                 const sessionKey = generateSessionKey(recipientPublicKeyPem);
-                console.log("Generated Session Key:", sessionKey);
-    
-                // Encrypt the message with the session key using RC4
                 const rc4 = new RC4(sessionKey);
                 const encryptedMessage = rc4.encrypt(message);
-                console.log("Encrypted Message:", encryptedMessage);
                 
-                // Encrypt session key using recipient's PEM public key
                 const encryptedSessionKey = encryptSessionKey(sessionKey, recipientPublicKeyPem);
-                console.log("Encrypted Session Key:", encryptedSessionKey);
-    
-                // Store the encrypted session key on the blockchain
+
                 await contract.methods.storeSessionKey(recipient, encryptedSessionKey).send({ from: account });
-    
-                // Send the encrypted message to the blockchain
+
                 const gasEstimate = await contract.methods.sendMessage(recipient, encryptedMessage).estimateGas({ from: account });
                 await contract.methods.sendMessage(recipient, encryptedMessage).send({ from: account, gas: gasEstimate + 100000 });
                 alert("Message sent!");
                 setMessage('');
                 setRecipient('');
-                fetchMessages(); // Refresh senders after sending a message
+                fetchMessages();
             } catch (error) {
                 console.error("Transaction Error:", error);
                 alert("Transaction failed: " + error.message);
@@ -179,7 +143,6 @@ const App = () => {
             alert("Contract not initialized.");
         }
     };
-    
 
     const fetchMessages = async () => {
         if (contract) {
@@ -201,31 +164,28 @@ const App = () => {
             try {
                 const receivedMessages = await contract.methods.fetchMessagesForSender(sender).call({ from: account });
                 const sentMessages = await contract.methods.fetchMessagesForSender(account).call({ from: sender });
-    
+
                 const formattedReceivedMessages = receivedMessages.map(msg => ({
                     ...msg,
                     timestamp: msg.timestamp * 1000,
                     direction: 'received',
                 }));
-    
+
                 const formattedSentMessages = sentMessages.map(msg => ({
                     ...msg,
                     timestamp: msg.timestamp * 1000,
                     direction: 'sent',
                 }));
-    
+
                 const combinedMessages = [...formattedReceivedMessages, ...formattedSentMessages];
                 combinedMessages.sort((a, b) => a.timestamp - b.timestamp);
-    
-                // For each message, get the session key from the contract and decrypt the message
+
                 for (let msg of combinedMessages) {
                     const sessionKey = await contract.methods.getSessionKey(sender).call({ from: account });
-    
-                    // Use the session key to decrypt the message
                     const rc4 = new RC4(sessionKey);
                     msg.content = rc4.decrypt(msg.content);
                 }
-    
+
                 setAllMessages(combinedMessages);
                 setSelectedSender(sender);
             } catch (error) {
@@ -236,7 +196,6 @@ const App = () => {
             alert("Contract not initialized.");
         }
     };
-    
 
     const goToAddContactPage = () => {
         navigate('/add-contact');
@@ -273,31 +232,29 @@ const App = () => {
                             allMessages.map((msg, index) => (
                                 <li key={index} className={`message ${msg.direction}`}>
                                     <p>{msg.content}</p>
-                                    <span className="timestamp">{new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                    <span className="timestamp">{new Date(msg.timestamp).toLocaleString()}</span>
                                 </li>
                             ))
                         ) : (
-                            <li>No messages found.</li>
+                            <li>No messages to display</li>
                         )}
                     </ul>
                 </div>
 
-                <div className="input-area">
+                <div className="message-form">
                     <input
                         type="text"
                         value={recipient}
                         onChange={(e) => setRecipient(e.target.value)}
-                        placeholder="Enter Recipient Ethereum Address"
-                        className="recipient-input"
+                        placeholder="Recipient address"
                     />
                     <input
                         type="text"
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
                         placeholder="Enter your message"
-                        className="message-input"
                     />
-                    <button onClick={sendMessage} className="send-button">Send</button>
+                    <button onClick={sendMessage}>Send</button>
                 </div>
             </div>
         </div>
