@@ -133,14 +133,7 @@ const handleSignUpSubmit = async () => {
     }
 };
 
-contract.events.PublicKeyUpdated({
-    filter: { user: account }, // Only listen for updates from the current account
-    fromBlock: 'latest'
-})
-.on('data', (event) => {
-    console.log("Public Key Updated:", event.returnValues);
-})
-.on('error', console.error);
+
 
     const handleLogin = async () => {
         if (!password) { // Validate password
@@ -176,8 +169,8 @@ contract.events.PublicKeyUpdated({
                 navigate('/app', { state: { account, username } });
                
                 console.log("Final")
-                const publicKeyHex = await generateKeys();
-                await contract.methods.updatePublicKey(publicKeyHex).send({ from: account });
+                // const publicKeyHex = await generateKeys();
+                // await contract.methods.updatePublicKey(publicKeyHex).send({ from: account });
                 
     
             } else {
