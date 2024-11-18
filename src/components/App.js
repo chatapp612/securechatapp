@@ -77,13 +77,19 @@ const App = () => {
                 console.error("Recipient public key is null or undefined.");
                 return;
             }
+    
+            const pemKey = `-----BEGIN PUBLIC KEY-----\n${Buffer.from(recipientPublicKeyHex, 'hex').toString('base64')}\n-----END PUBLIC KEY-----`;
             const buffer = Buffer.from(sessionKey, 'utf-8');
-            const encrypted = crypto.publicEncrypt({ key: Buffer.from(recipientPublicKeyHex, 'hex'), padding: crypto.constants.RSA_PKCS1_PADDING }, buffer);
+            const encrypted = crypto.publicEncrypt(
+                { key: pemKey, padding: crypto.constants.RSA_PKCS1_PADDING },
+                buffer
+            );
             return encrypted.toString('hex');
         } catch (error) {
             console.error("Error in encrypting session key:", error);
         }
     };
+    
 
     const sendMessage = async () => {
         if (!recipient || !message) {
