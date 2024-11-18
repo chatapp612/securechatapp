@@ -79,22 +79,47 @@ const App = () => {
     };
 
     const encryptSessionKey = (sessionKey, recipientPublicKey) => {
-        // Convert the session key to a buffer
-        const buffer = Buffer.from(sessionKey, 'utf-8');
+        try {
+            // Convert the session key to a buffer
+            const buffer = Buffer.from(sessionKey, 'utf-8');
     
-        // Convert the recipient's public key to a Buffer
-        const publicKeyArray = recipientPublicKey
-            .replace(/^0x/, '')       // Remove "0x" if present
-            .split(',')                // Split by commas
-            .map(num => parseInt(num)); // Convert each number to an integer
-        console.log(publicKeyArray);
-        const publicKeyBuffer = Buffer.from(publicKeyArray);
-        console.log(publicKeyBuffer);
-
-        // Encrypt the session key with the public key
-        const encrypted = crypto.publicEncrypt(publicKeyBuffer, buffer);
-        return encrypted.toString('hex');
+            // Check if recipientPublicKey is valid
+            if (!recipientPublicKey) {
+                console.error("Recipient public key is null or undefined.");
+                return;
+            }
+    
+            // Convert the recipient's public key to a Buffer
+            const publicKeyArray = recipientPublicKey
+                .replace(/^0x/, '')       // Remove "0x" if present
+                .split(',')                // Split by commas
+                .map(num => {
+                    const parsedNum = parseInt(num);
+                    if (isNaN(parsedNum)) {
+                        console.error(`Invalid number in public key: ${num}`);
+                    }
+                    return parsedNum;
+                });
+    
+            console.log("Public Key Array:", publicKeyArray);
+    
+            // Handle case where publicKeyArray contains invalid data
+            if (publicKeyArray.includes(NaN)) {
+                console.error("Public key array contains invalid values.");
+                return;
+            }
+    
+            const publicKeyBuffer = Buffer.from(publicKeyArray);
+            console.log("Public Key Buffer:", publicKeyBuffer);
+    
+            // Encrypt the session key with the public key
+            const encrypted = crypto.publicEncrypt(publicKeyBuffer, buffer);
+            return encrypted.toString('hex');
+        } catch (error) {
+            console.error("Error in encrypting session key:", error);
+        }
     };
+    
     
 
     const sendMessage = async () => {
