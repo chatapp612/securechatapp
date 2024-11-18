@@ -79,6 +79,7 @@ const App = () => {
             }
     
             const pemKey = `-----BEGIN PUBLIC KEY-----\n${Buffer.from(recipientPublicKeyHex, 'hex').toString('base64')}\n-----END PUBLIC KEY-----`;
+            console.log(pemKey);
             const buffer = Buffer.from(sessionKey, 'utf-8');
             const encrypted = crypto.publicEncrypt(
                 { key: pemKey, padding: crypto.constants.RSA_PKCS1_PADDING },
