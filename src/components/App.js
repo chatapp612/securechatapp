@@ -80,12 +80,28 @@ const App = () => {
 
     const encryptSessionKey = (sessionKey, recipientPublicKey) => {
         console.log(recipientPublicKey);
+    
+        // Remove '0x' prefix if present
+        if (recipientPublicKey.startsWith('0x')) {
+            recipientPublicKey = recipientPublicKey.slice(2);
+        }
+    
+        // Convert the hex public key to a Buffer
+        const publicKeyBuffer = Buffer.from(recipientPublicKey, 'hex');
+    
+        // Wrap the key in PEM format
+        const pemPublicKey = `-----BEGIN PUBLIC KEY-----\n${publicKeyBuffer.toString('base64')}\n-----END PUBLIC KEY-----`;
+    
         const buffer = Buffer.from(sessionKey, 'utf-8');
         console.log("after buffer statement");
-        const encrypted = crypto.publicEncrypt(recipientPublicKey, buffer);
+    
+        // Encrypt the session key using the PEM-formatted public key
+        const encrypted = crypto.publicEncrypt(pemPublicKey, buffer);
         console.log("after encrypted statement");
+    
         return encrypted.toString('hex');
     };
+    
 
     const sendMessage = async () => {
         if (!recipient || !message) {
