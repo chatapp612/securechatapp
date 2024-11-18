@@ -97,30 +97,48 @@ const App = () => {
             alert("Both recipient and message fields are required.");
             return;
         }
-
+    
         if (contract) {
             try {
+                // Fetch recipient's public key
                 const recipientPublicKeyHex = await contract.methods.getPublicKey(recipient).call({ from: account });
-                console.log("publickey",recipientPublicKeyHex);
+                console.log("Public Key:", recipientPublicKeyHex);
+    
                 if (!recipientPublicKeyHex) {
                     console.error("No public key found for recipient.");
                     return;
                 }
-                
+    
+                // Generate a new session key for encryption
                 const sessionKey = generateSessionKey();
-                console.log("sessionkey",sessionKey);
-                console.log(typeof sessionKey); // should output "string"
-
+                console.log("Session Key:", sessionKey);
+    
+                // Create an envelope structure
+                const envelope = {
+                    sessionKey: sessionKey, // Add session key to the envelope
+                    message: message, // Actual message to be encrypted
+                };
+    
+                // Convert the envelope to a string (JSON format)
+                const envelopeString = JSON.stringify(envelope);
+                const paddedEnvelope = padEnvelope(envelopeString); // Ensure constant size
+    
+                // Encrypt the envelope with RC4 using the session key
                 const rc4 = new RC4(sessionKey);
-                const encryptedMessage = rc4.encrypt(message);
-                console.log("encryptedmsg", encryptedMessage)
+                const encryptedEnvelope = rc4.encrypt(paddedEnvelope);
+                console.log("Encrypted Envelope:", encryptedEnvelope);
+    
+                // Encrypt the session key with the recipient's public key
                 const encryptedSessionKey = encryptSessionKey(sessionKey, recipientPublicKeyHex);
-
+    
+                // Store the encrypted session key on-chain
                 await contract.methods.storeSessionKey(recipient, encryptedSessionKey).send({ from: account });
-
-                const gasEstimate = await contract.methods.sendMessage(recipient, encryptedMessage).estimateGas({ from: account });
-                await contract.methods.sendMessage(recipient, encryptedMessage).send({ from: account, gas: gasEstimate + 100000 });
-                alert("Message sent!");
+    
+                // Send the encrypted envelope as the message
+                const gasEstimate = await contract.methods.sendMessage(recipient, encryptedEnvelope).estimateGas({ from: account });
+                await contract.methods.sendMessage(recipient, encryptedEnvelope).send({ from: account, gas: gasEstimate + 100000 });
+    
+                alert("Message sent successfully!");
                 setMessage('');
                 setRecipient('');
                 fetchMessages();
@@ -132,6 +150,7 @@ const App = () => {
             alert("Contract not initialized.");
         }
     };
+    
 
     const fetchMessages = async () => {
         if (contract) {
