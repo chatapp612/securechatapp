@@ -123,7 +123,7 @@ await contract.methods.updatePublicKey(publicKey).send({ from: account });
         try {
             console.log("Password entered by user:", password);
             console.log("before password validate");
-    
+
             // Hash the password entered by the user
             const hashedPassword = web3.utils.keccak256(password);
     
