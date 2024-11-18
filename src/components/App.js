@@ -79,26 +79,19 @@ const App = () => {
     };
 
     const encryptSessionKey = (sessionKey, recipientPublicKey) => {
-        console.log(recipientPublicKey);
-    
-        // Remove '0x' prefix if present
-        if (recipientPublicKey.startsWith('0x')) {
-            recipientPublicKey = recipientPublicKey.slice(2);
-        }
-    
-        // Convert the hex public key to a Buffer
-        const publicKeyBuffer = Buffer.from(recipientPublicKey, 'hex');
-    
-        // Wrap the key in PEM format
-        const pemPublicKey = `-----BEGIN PUBLIC KEY-----\n${publicKeyBuffer.toString('base64')}\n-----END PUBLIC KEY-----`;
-    
+        // Convert the session key to a buffer
         const buffer = Buffer.from(sessionKey, 'utf-8');
-        console.log("after buffer statement");
     
-        // Encrypt the session key using the PEM-formatted public key
-        const encrypted = crypto.publicEncrypt(pemPublicKey, buffer);
-        console.log("after encrypted statement");
+        // Convert the recipient's public key to a Buffer
+        const publicKeyArray = recipientPublicKey
+            .replace(/^0x/, '')       // Remove "0x" if present
+            .split(',')                // Split by commas
+            .map(num => parseInt(num)); // Convert each number to an integer
     
+        const publicKeyBuffer = Buffer.from(publicKeyArray);
+    
+        // Encrypt the session key with the public key
+        const encrypted = crypto.publicEncrypt(publicKeyBuffer, buffer);
         return encrypted.toString('hex');
     };
     
@@ -123,7 +116,7 @@ const App = () => {
                 const rc4 = new RC4(sessionKey);
                 const encryptedMessage = rc4.encrypt(message);
                 console.log("Encrypted Message:", encryptedMessage);
-
+                
                 // Encrypt session key using recipient's public key
                 const encryptedSessionKey = encryptSessionKey(sessionKey, recipientPublicKey);
                 console.log("Encrypted Session Key:", encryptedSessionKey);
