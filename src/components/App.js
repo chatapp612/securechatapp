@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
 import { useWeb3 } from '../contexts/Web3Context.js'; // Import Web3 context hook
 import crypto from 'crypto';
+const forge = require('node-forge');
 
 // RC4 encryption/decryption class
 class RC4 {
@@ -80,7 +81,7 @@ const App = () => {
 
     const encryptSessionKey = (sessionKey, recipientPublicKey) => {
         try {
-            // Convert the session key to a buffer
+            // Convert the session key to a buffer (utf-8 encoding)
             const buffer = Buffer.from(sessionKey, 'utf-8');
     
             // Check if recipientPublicKey is valid
@@ -89,33 +90,19 @@ const App = () => {
                 return;
             }
     
-            // Convert the recipient's public key to a Buffer
-            const publicKeyArray = recipientPublicKey
-                .replace(/^0x/, '')       // Remove "0x" if present
-                .split(',')                // Split by commas
-                .map(num => {
-                    const parsedNum = parseInt(num);
-                    if (isNaN(parsedNum)) {
-                        console.error(`Invalid number in public key: ${num}`);
-                    }
-                    return parsedNum;
-                });
-    
-            console.log("Public Key Array:", publicKeyArray);
-    
-            // Handle case where publicKeyArray contains invalid data
-            if (publicKeyArray.includes(NaN)) {
-                console.error("Public key array contains invalid values.");
+            // The public key should be in PEM format, so ensure it is a string and valid.
+            if (typeof recipientPublicKey !== 'string' || !recipientPublicKey.startsWith('-----BEGIN PUBLIC KEY-----')) {
+                console.error("Invalid public key format. The key must be in PEM format.");
                 return;
             }
     
-            const publicKeyBuffer = Buffer.from(publicKeyArray);
-            console.log("Public Key Buffer:", publicKeyBuffer);
+            // Encrypt the session key using the recipient's public key
+            const encrypted = crypto.publicEncrypt(
+                recipientPublicKey,  // PEM format public key
+                buffer               // Session key buffer
+            );
     
-            // Encrypt the session key with the public key
-            const encrypted = crypto.publicEncrypt(publicKeyBuffer, buffer);
-
-            
+            // Return the encrypted session key in hex format
             return encrypted.toString('hex');
         } catch (error) {
             console.error("Error in encrypting session key:", error);
@@ -123,34 +110,54 @@ const App = () => {
     };
     
     
+    
+    function convertPublicKeyToPem(publicKeyString) {
+        // If the public key is in hexadecimal format, convert it to a binary array (buffer)
+        const publicKeyBuffer = Buffer.from(publicKeyString, 'hex');
+        
+        // Create a Forge public key object from the binary data
+        const publicKey = forge.pki.publicKeyFromPem(publicKeyBuffer.toString('utf8'));
+    
+        // Convert the key to PEM format
+        const pemFormattedPublicKey = forge.pki.publicKeyToPem(publicKey);
+        
+        return pemFormattedPublicKey;
+    }
+    
 
     const sendMessage = async () => {
         if (!recipient || !message) {
             alert("Both recipient and message fields are required.");
             return;
         }
-
+    
         if (contract) {
             try {
+                // Fetch the recipient's public key in hex format
                 const recipientPublicKey = await contract.methods.getPublicKey(recipient).call({ from: account });
                 console.log("Recipient Address:", recipient);
                 console.log("Fetched Public Key:", recipientPublicKey);
-
-                // Generate session key using recipient's public key
-                const sessionKey = generateSessionKey(recipientPublicKey);
+    
+                // Convert the public key from hex to PEM format
+                const recipientPublicKeyPem = convertPublicKeyToPem(recipientPublicKey);
+                console.log("Converted Public Key to PEM format:", recipientPublicKeyPem);
+    
+                // Generate session key using recipient's PEM public key
+                const sessionKey = generateSessionKey(recipientPublicKeyPem);
                 console.log("Generated Session Key:", sessionKey);
-
+    
                 // Encrypt the message with the session key using RC4
                 const rc4 = new RC4(sessionKey);
                 const encryptedMessage = rc4.encrypt(message);
                 console.log("Encrypted Message:", encryptedMessage);
                 
-                // Encrypt session key using recipient's public key
-                const encryptedSessionKey = encryptSessionKey(sessionKey, recipientPublicKey);
+                // Encrypt session key using recipient's PEM public key
+                const encryptedSessionKey = encryptSessionKey(sessionKey, recipientPublicKeyPem);
                 console.log("Encrypted Session Key:", encryptedSessionKey);
-
+    
+                // Store the encrypted session key on the blockchain
                 await contract.methods.storeSessionKey(recipient, encryptedSessionKey).send({ from: account });
-
+    
                 // Send the encrypted message to the blockchain
                 const gasEstimate = await contract.methods.sendMessage(recipient, encryptedMessage).estimateGas({ from: account });
                 await contract.methods.sendMessage(recipient, encryptedMessage).send({ from: account, gas: gasEstimate + 100000 });
@@ -166,6 +173,7 @@ const App = () => {
             alert("Contract not initialized.");
         }
     };
+    
 
     const fetchMessages = async () => {
         if (contract) {
@@ -187,29 +195,31 @@ const App = () => {
             try {
                 const receivedMessages = await contract.methods.fetchMessagesForSender(sender).call({ from: account });
                 const sentMessages = await contract.methods.fetchMessagesForSender(account).call({ from: sender });
-
+    
                 const formattedReceivedMessages = receivedMessages.map(msg => ({
                     ...msg,
                     timestamp: msg.timestamp * 1000,
                     direction: 'received',
                 }));
-
+    
                 const formattedSentMessages = sentMessages.map(msg => ({
                     ...msg,
                     timestamp: msg.timestamp * 1000,
                     direction: 'sent',
                 }));
-
+    
                 const combinedMessages = [...formattedReceivedMessages, ...formattedSentMessages];
                 combinedMessages.sort((a, b) => a.timestamp - b.timestamp);
-
-                // Decrypt messages using the session key
+    
+                // For each message, get the session key from the contract and decrypt the message
                 for (let msg of combinedMessages) {
                     const sessionKey = await contract.methods.getSessionKey(sender).call({ from: account });
+    
+                    // Use the session key to decrypt the message
                     const rc4 = new RC4(sessionKey);
                     msg.content = rc4.decrypt(msg.content);
                 }
-
+    
                 setAllMessages(combinedMessages);
                 setSelectedSender(sender);
             } catch (error) {
@@ -220,6 +230,7 @@ const App = () => {
             alert("Contract not initialized.");
         }
     };
+    
 
     const goToAddContactPage = () => {
         navigate('/add-contact');
