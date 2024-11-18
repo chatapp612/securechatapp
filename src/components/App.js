@@ -111,14 +111,22 @@ const App = () => {
     
     
     
-    function convertPublicKeyToPem(publicKeyString) {
-        // If the public key is in hexadecimal format, convert it to a binary array (buffer)
-        const publicKeyBuffer = Buffer.from(publicKeyString, 'hex');
+    function convertPublicKeyToPem(publicKeyHex) {
+        // Convert the hexadecimal string to a binary buffer
+        const publicKeyBuffer = Buffer.from(publicKeyHex, 'hex');
         
-        // We now assume publicKeyBuffer contains the raw binary of the public key (e.g., X.509 format)
-        const pemFormattedPublicKey = forge.pki.publicKeyToPem(forge.pki.publicKeyFromAsn1(forge.asn1.fromDer(publicKeyBuffer)));
+        // Convert the buffer to a base64 string
+        const base64PublicKey = publicKeyBuffer.toString('base64');
         
-        return pemFormattedPublicKey;
+        // Split the base64 string into lines of 64 characters each for PEM compliance
+        const chunkSize = 64;
+        let pemFormattedKey = '-----BEGIN PUBLIC KEY-----\n';
+        for (let i = 0; i < base64PublicKey.length; i += chunkSize) {
+            pemFormattedKey += base64PublicKey.slice(i, i + chunkSize) + '\n';
+        }
+        pemFormattedKey += '-----END PUBLIC KEY-----';
+    
+        return pemFormattedKey;
     }
     
     
