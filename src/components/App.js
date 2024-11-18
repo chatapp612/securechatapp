@@ -114,6 +114,8 @@ const App = () => {
     
             // Encrypt the session key with the public key
             const encrypted = crypto.publicEncrypt(publicKeyBuffer, buffer);
+
+            
             return encrypted.toString('hex');
         } catch (error) {
             console.error("Error in encrypting session key:", error);
