@@ -87,9 +87,10 @@ const App = () => {
             .replace(/^0x/, '')       // Remove "0x" if present
             .split(',')                // Split by commas
             .map(num => parseInt(num)); // Convert each number to an integer
-    
+        console.log(publicKeyArray);
         const publicKeyBuffer = Buffer.from(publicKeyArray);
-    
+        console.log(publicKeyBuffer);
+
         // Encrypt the session key with the public key
         const encrypted = crypto.publicEncrypt(publicKeyBuffer, buffer);
         return encrypted.toString('hex');
