@@ -121,10 +121,17 @@ async function generateKeys() {
             const publicKey = generateKeys();
             
             console.log(publicKey);
+
+            //convert public key to hex string to store on block
+            const publicKeyHex = Array.from(new Uint8Array(publicKey))
+            .map(byte => byte.toString(16).padStart(2, '0'))
+            .join('');
+
+
             // Register the user on the blockchain with the username and public key
-            await contract.methods.registerUser(username, publicKey, password).send({ from: account });
+            await contract.methods.registerUser(username, publicKeyHex, password).send({ from: account });
 // Store the public key on the blockchain if needed
-await contract.methods.updatePublicKey(publicKey).send({ from: account });
+await contract.methods.updatePublicKey(publicKeyHex).send({ from: account });
             setOpen(false);
             navigate('/app', { state: { account, username } }); // Navigate to the main app with account and username
         } catch (error) {
