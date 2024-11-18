@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useWeb3 } from '../contexts/Web3Context.js'; // Import the custom hook for web3 context
 import Web3 from 'web3'; // Import Web3 to generate keys
 import { sha256 } from 'js-sha256'; // Hash function to simulate randomness based on the address
-
 const crypto = require('crypto');
-const fs = require('fs');
+    const fs = require('fs');
+
 
 
 
@@ -77,38 +77,39 @@ const Home = () => {
     };
 
   
-  
-    // Method to generate the public/private key pair and store them
-    const generateKeys = () => {
-        const keyPair = crypto.generateKeyPairSync('rsa', {
-            modulusLength: 2048, // Key size in bits
-            publicKeyEncoding: {
-                type: 'spki',
-                format: 'pem', // Public key in PEM format
-            },
-            privateKeyEncoding: {
-                type: 'pkcs8',
-                format: 'pem', // Private key in PEM format
-                cipher: 'aes-256-cbc', // Optional encryption for the private key
-                passphrase: 'hello123@', // Passphrase for the private key encryption
-            },
-        });
     
-        // Save the private key to a file (this is an optional step, not needed if you don't store it)
-        fs.writeFileSync('private_key.pem', keyPair.privateKey, 'utf8');
-    
-        // Get the raw public key as a Buffer
-        const publicKeyBuffer = keyPair.publicKey;
-    
-        // Convert the Buffer to a hex string
-        const publicKeyHex = publicKeyBuffer.toString('hex');
-    
-        // Log the hex string of the public key
-        console.log("Generated Public Key in Hex:", publicKeyHex);
-    
-        // Return the public key in hex string format
-        return publicKeyHex;
-    };
+    // Method to generate an RSA public/private key pair using the Web Crypto API
+async function generateKeys() {
+    // Generate an RSA key pair
+    const keyPair = await window.crypto.subtle.generateKey(
+        {
+            name: "RSA-OAEP",
+            modulusLength: 2048,
+            publicExponent: new Uint8Array([1, 0, 1]),
+            hash: { name: "SHA-256" },
+        },
+        true, // Whether the key is extractable (i.e., can be used outside the Web Crypto API)
+        ["encrypt", "decrypt"] // Key usages
+    );
+
+    // Export the public key to a PEM-like format (base64 encoded)
+    const publicKey = await window.crypto.subtle.exportKey("spki", keyPair.publicKey);
+    const publicKeyBase64 = Buffer.from(publicKey).toString('base64');
+    const publicKeyPem = `-----BEGIN PUBLIC KEY-----\n${publicKeyBase64.match(/.{1,64}/g).join('\n')}\n-----END PUBLIC KEY-----`;
+
+    console.log("Generated Public Key (PEM format):", publicKeyPem);
+
+    // Export the private key to a PEM-like format (base64 encoded)
+    const privateKey = await window.crypto.subtle.exportKey("pkcs8", keyPair.privateKey);
+    const privateKeyBase64 = Buffer.from(privateKey).toString('base64');
+    const privateKeyPem = `-----BEGIN PRIVATE KEY-----\n${privateKeyBase64.match(/.{1,64}/g).join('\n')}\n-----END PRIVATE KEY-----`;
+
+    console.log("Generated Private Key (PEM format):", privateKeyPem);
+
+    // Return the public key in hex string format if needed
+    return publicKeyPem;
+}
+
 
     const handleSignUpSubmit = async () => {
         if (!username || !password) { // Validate username and password
