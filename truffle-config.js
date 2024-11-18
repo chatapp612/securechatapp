@@ -9,16 +9,16 @@ module.exports = {
       port: 8545,
       network_id: "*" // Match any network id
     },
-    holesky: {
+    volta: {
       provider: () => new HDWalletProvider({
         mnemonic: {
           phrase: "liar save element move uncover census wife picture spread dog art tornado" // Replace with your actual mnemonic
         },
-        providerOrUrl: "https://ethereum-holesky-rpc.publicnode.com",
+        providerOrUrl: "https://volta-rpc.energyweb.org",
         pollingInterval: 22000, 
         timeoutBlocks: 218,
       }),
-      network_id: 17000, // holesky's network ID
+      network_id: 73799, // holesky's network ID
       gas: 6000000, // Adjust gas limit as needed
       gasPrice: 50000000000 // Adjust gas price if needed
     }
