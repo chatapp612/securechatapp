@@ -125,7 +125,7 @@ const App = () => {
             pemFormattedKey += base64PublicKey.slice(i, i + chunkSize) + '\n';
         }
         pemFormattedKey += '-----END PUBLIC KEY-----';
-    
+    console.log(pemFormattedKey);
         return pemFormattedKey;
     }
     
