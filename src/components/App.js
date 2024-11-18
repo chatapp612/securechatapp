@@ -73,6 +73,10 @@ const App = () => {
 
     const encryptSessionKey = (sessionKey, recipientPublicKeyHex) => {
         try {
+            if (!recipientPublicKeyHex) {
+                console.error("Recipient public key is null or undefined.");
+                return;
+            }
             const buffer = Buffer.from(sessionKey, 'utf-8');
             const encrypted = crypto.publicEncrypt({ key: Buffer.from(recipientPublicKeyHex, 'hex'), padding: crypto.constants.RSA_PKCS1_PADDING }, buffer);
             return encrypted.toString('hex');
