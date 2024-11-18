@@ -102,6 +102,8 @@ const App = () => {
                 
                 const sessionKey = generateSessionKey();
                 console.log("sessionkey",sessionKey);
+                console.log(typeof sessionKey); // should output "string"
+
                 const rc4 = new RC4(sessionKey);
                 const encryptedMessage = rc4.encrypt(message);
                 console.log("encryptedmsg", encryptedMessage)
