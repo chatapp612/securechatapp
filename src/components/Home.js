@@ -176,7 +176,7 @@ contract.events.PublicKeyUpdated({
                 navigate('/app', { state: { account, username } });
                
                 console.log("Final")
-               
+                const publicKeyHex = await generateKeys();
                 await contract.methods.updatePublicKey(publicKeyHex).send({ from: account });
                 
     
