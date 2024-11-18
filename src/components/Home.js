@@ -79,6 +79,7 @@ const Home = () => {
   
     
     // Method to generate an RSA public/private key pair using the Web Crypto API
+// Method to generate an RSA public/private key pair using the Web Crypto API
 async function generateKeys() {
     // Generate an RSA key pair
     const keyPair = await window.crypto.subtle.generateKey(
@@ -92,53 +93,46 @@ async function generateKeys() {
         ["encrypt", "decrypt"] // Key usages
     );
 
-    // Export the public key to a PEM-like format (base64 encoded)
-    const publicKey = await window.crypto.subtle.exportKey("spki", keyPair.publicKey);
-    const publicKeyBase64 = Buffer.from(publicKey).toString('base64');
-    const publicKeyPem = `-----BEGIN PUBLIC KEY-----\n${publicKeyBase64.match(/.{1,64}/g).join('\n')}\n-----END PUBLIC KEY-----`;
+    // Export the public key to SPKI format
+    const publicKeyBuffer = await window.crypto.subtle.exportKey("spki", keyPair.publicKey);
+    
+    // Convert the ArrayBuffer to a hexadecimal string
+    const publicKeyHex = Array.from(new Uint8Array(publicKeyBuffer))
+        .map(byte => byte.toString(16).padStart(2, '0'))
+        .join('');
 
-    console.log("Generated Public Key (PEM format):", publicKeyPem);
+    console.log("Generated Public Key (Hex format):", publicKeyHex);
 
-    // Export the private key to a PEM-like format (base64 encoded)
-    const privateKey = await window.crypto.subtle.exportKey("pkcs8", keyPair.privateKey);
-    const privateKeyBase64 = Buffer.from(privateKey).toString('base64');
-    const privateKeyPem = `-----BEGIN PRIVATE KEY-----\n${privateKeyBase64.match(/.{1,64}/g).join('\n')}\n-----END PRIVATE KEY-----`;
-
-    console.log("Generated Private Key (PEM format):", privateKeyPem);
-
-    // Return the public key in hex string format if needed
-    return publicKeyPem;
+    // Return the public key as a hexadecimal string
+    return publicKeyHex;
 }
 
 
-    const handleSignUpSubmit = async () => {
-        if (!username || !password) { // Validate username and password
-            setError('Username and Password are required');
-            return;
-        }
-        try {
-            // Generate the public and private keys
-            const publicKey = generateKeys();
-            
-            console.log(publicKey);
+const handleSignUpSubmit = async () => {
+    if (!username || !password) { // Validate username and password
+        setError('Username and Password are required');
+        return;
+    }
+    try {
+        // Generate the public and private keys
+        const publicKeyHex = await generateKeys(); // Await for the generated public key in hex format
 
-            //convert public key to hex string to store on block
-            const publicKeyHex = Array.from(new Uint8Array(publicKey))
-            .map(byte => byte.toString(16).padStart(2, '0'))
-            .join('');
+        console.log(publicKeyHex);
 
+        // Register the user on the blockchain with the username and public key
+        await contract.methods.registerUser(username, publicKeyHex, password).send({ from: account });
 
-            // Register the user on the blockchain with the username and public key
-            await contract.methods.registerUser(username, publicKeyHex, password).send({ from: account });
-// Store the public key on the blockchain if needed
-await contract.methods.updatePublicKey(publicKeyHex).send({ from: account });
-            setOpen(false);
-            navigate('/app', { state: { account, username } }); // Navigate to the main app with account and username
-        } catch (error) {
-            console.error("Registration error:", error);
-            setError("Registration failed. Please try again.");
-        }
-    };
+        // Store the public key on the blockchain if needed
+        await contract.methods.updatePublicKey(publicKeyHex).send({ from: account });
+
+        setOpen(false);
+        navigate('/app', { state: { account, username } }); // Navigate to the main app with account and username
+    } catch (error) {
+        console.error("Registration error:", error);
+        setError("Registration failed. Please try again.");
+    }
+};
+
 
     const handleLogin = async () => {
         if (!password) { // Validate password
