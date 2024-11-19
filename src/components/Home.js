@@ -111,7 +111,7 @@ async function generateKeys() {
 
 
         localStorage.setItem('privateKey', privateKeyHex);
-
+    console.log("pvt key stored in local sotrage!");
 
     const blob = new Blob([privateKeyHex], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
