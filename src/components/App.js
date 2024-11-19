@@ -71,25 +71,47 @@ const App = () => {
         return crypto.randomBytes(16).toString('hex');
     };
 
-    const encryptSessionKey = (sessionKey, recipientPublicKeyHex) => {
+    async function encryptSessionKey(sessionKey, recipientPublicKeyHex) {
         try {
             if (!recipientPublicKeyHex) {
                 console.error("Recipient public key is null or undefined.");
                 return;
             }
     
-            const pemKey = `-----BEGIN PUBLIC KEY-----\n${Buffer.from(recipientPublicKeyHex, 'hex').toString('base64')}\n-----END PUBLIC KEY-----`;
-            console.log(pemKey);
-            const buffer = Buffer.from(sessionKey, 'utf-8');
-            const encrypted = crypto.publicEncrypt(
-                { key: pemKey, padding: crypto.constants.RSA_PKCS1_PADDING },
-                buffer
+            // Convert recipient public key from hexadecimal to ArrayBuffer
+            const publicKeyBuffer = new Uint8Array(recipientPublicKeyHex.match(/.{1,2}/g).map(byte => parseInt(byte, 16))).buffer;
+    
+            // Import the recipient's public key
+            const publicKey = await window.crypto.subtle.importKey(
+                "spki", 
+                publicKeyBuffer, 
+                { name: "RSA-OAEP", hash: { name: "SHA-256" } }, 
+                false, 
+                ["encrypt"]
             );
-            return encrypted.toString('hex');
+    
+            // Convert the session key (string) into an ArrayBuffer
+            const encoder = new TextEncoder();
+            const sessionKeyBuffer = encoder.encode(sessionKey);
+    
+            // Encrypt the session key using the recipient's public key
+            const encryptedSessionKeyBuffer = await window.crypto.subtle.encrypt(
+                { name: "RSA-OAEP" },
+                publicKey,
+                sessionKeyBuffer
+            );
+    
+            // Convert the encrypted session key into a hexadecimal string
+            const encryptedSessionKeyHex = Array.from(new Uint8Array(encryptedSessionKeyBuffer))
+                .map(byte => byte.toString(16).padStart(2, '0'))
+                .join('');
+    
+            return encryptedSessionKeyHex;
         } catch (error) {
             console.error("Error in encrypting session key:", error);
         }
-    };
+    }
+    
     
     async function decryptSessionKey(encryptedSessionKeyHex) {
         try {
