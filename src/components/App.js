@@ -71,87 +71,67 @@ const App = () => {
         return crypto.randomBytes(16).toString('hex');
     };
 
-    async function encryptSessionKey(sessionKey, recipientPublicKeyHex) {
+    const encryptSessionKey = (sessionKey, recipientPublicKeyHex) => {
         try {
             if (!recipientPublicKeyHex) {
                 console.error("Recipient public key is null or undefined.");
                 return;
             }
     
-            // Convert recipient public key from hexadecimal to ArrayBuffer
-            const publicKeyBuffer = new Uint8Array(recipientPublicKeyHex.match(/.{1,2}/g).map(byte => parseInt(byte, 16))).buffer;
+            // Convert the recipient's public key from hex to PEM format for encryption
+            const pemKey = `-----BEGIN PUBLIC KEY-----\n${Buffer.from(recipientPublicKeyHex, 'hex').toString('base64')}\n-----END PUBLIC KEY-----`;
+            console.log(pemKey);
     
-            // Import the recipient's public key
-            const publicKey = await window.crypto.subtle.importKey(
-                "spki", 
-                publicKeyBuffer, 
-                { name: "RSA-OAEP", hash: { name: "SHA-256" } }, 
-                false, 
-                ["encrypt"]
+            // Convert the session key (string) into a buffer
+            const buffer = Buffer.from(sessionKey, 'utf-8');
+    
+            // Encrypt the session key using the recipient's public key (RSA encryption)
+            const encrypted = crypto.publicEncrypt(
+                { key: pemKey, padding: crypto.constants.RSA_PKCS1_PADDING },
+                buffer
             );
     
-            // Convert the session key (string) into an ArrayBuffer
-            const encoder = new TextEncoder();
-            const sessionKeyBuffer = encoder.encode(sessionKey);
-    
-            // Encrypt the session key using the recipient's public key
-            const encryptedSessionKeyBuffer = await window.crypto.subtle.encrypt(
-                { name: "RSA-OAEP" },
-                publicKey,
-                sessionKeyBuffer
-            );
-    
-            // Convert the encrypted session key into a hexadecimal string
-            const encryptedSessionKeyHex = Array.from(new Uint8Array(encryptedSessionKeyBuffer))
-                .map(byte => byte.toString(16).padStart(2, '0'))
-                .join('');
-    
-            return encryptedSessionKeyHex;
+            // Return the encrypted session key as a hexadecimal string (which is a valid string for Solidity)
+            return encrypted.toString('hex');
         } catch (error) {
             console.error("Error in encrypting session key:", error);
         }
-    }
+    };
     
     
-    async function decryptSessionKey(encryptedSessionKeyHex) {
+    const decryptSessionKey = async (encryptedSessionKey) => {
         try {
-            // Retrieve the private key from localStorage
+            // Fetch the private key from localStorage
             const privateKeyHex = localStorage.getItem('privateKey');
+    
             if (!privateKeyHex) {
-                throw new Error('Private key not found in localStorage');
+                console.error("Private key not found in localStorage.");
+                return;
             }
     
-            // Convert the private key from hexadecimal to ArrayBuffer
-            const privateKeyBuffer = new Uint8Array(privateKeyHex.match(/.{1,2}/g).map(byte => parseInt(byte, 16))).buffer;
+            // Convert the private key from hex to PEM format
+            const pemPrivateKey = `-----BEGIN PRIVATE KEY-----\n${Buffer.from(privateKeyHex, 'hex').toString('base64')}\n-----END PRIVATE KEY-----`;
     
-            // Import the private key from the ArrayBuffer (PKCS8 format)
-            const privateKey = await window.crypto.subtle.importKey(
-                "pkcs8",
-                privateKeyBuffer,
-                { name: "RSA-OAEP", hash: { name: "SHA-256" } },
-                true, // Whether the key is extractable
-                ["decrypt"] // Key usage
-            );
-    
-            // Convert the encrypted session key from hexadecimal to ArrayBuffer
-            const encryptedSessionKeyBuffer = new Uint8Array(encryptedSessionKeyHex.match(/.{1,2}/g).map(byte => parseInt(byte, 16))).buffer;
+            // Convert the encrypted session key from hex to a Buffer
+            const encryptedBuffer = Buffer.from(encryptedSessionKey, 'hex');
     
             // Decrypt the session key using the private key
-            const decryptedSessionKeyBuffer = await window.crypto.subtle.decrypt(
-                { name: "RSA-OAEP" },
-                privateKey,
-                encryptedSessionKeyBuffer
+            const decrypted = crypto.privateDecrypt(
+                { key: pemPrivateKey, padding: crypto.constants.RSA_PKCS1_PADDING },
+                encryptedBuffer
             );
     
-            // Convert the decrypted session key to a string (assuming it's UTF-8 encoded)
-            const decoder = new TextDecoder();
-            const decryptedSessionKey = decoder.decode(decryptedSessionKeyBuffer);
+            // Convert the decrypted Buffer to a string (session key)
+            const decryptedSessionKey = decrypted.toString('utf-8');
+            console.log("Decrypted Session Key:", decryptedSessionKey);
     
             return decryptedSessionKey;
         } catch (error) {
             console.error("Error in decrypting session key:", error);
         }
-    }
+    };
+    
+    
     
     
     
