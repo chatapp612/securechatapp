@@ -185,7 +185,7 @@ const App = () => {
                 console.log("Padded Envelope:", paddedmessage);
     
                 // Encrypt the session key with the recipient's public key
-                const encryptedSessionKey = encryptSessionKey(sessionKey, recipientPublicKeyHex);
+                const encryptedSessionKey = await encryptSessionKey(sessionKey, recipientPublicKeyHex);
                 console.log("encrypted session key", encryptSessionKey);
                 // Store the encrypted session key on-chain
                 await contract.methods.storeSessionKey(recipient, encryptedSessionKey).send({ from: account });
