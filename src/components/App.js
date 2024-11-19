@@ -91,18 +91,48 @@ const App = () => {
         }
     };
     
-// Function to pad the envelope to ensure a constant size
-// const padEnvelope = (message, sessionKeyLength) => {
-//     const desiredLength = message.length+ sessionKeyLength; // Choose a constant size for the envelope
-//     let padded = message;
-
-//     // Pad with spaces or a specific character if the string is shorter than the desired length
-//     while (padded.length < desiredLength) {
-//         padded += ' '; // You can pad with spaces or any other character
-//     }
-
-//     return padded.substring(0, desiredLength); // Ensure it does not exceed the desired length
-// };
+    async function decryptSessionKey(encryptedSessionKeyHex) {
+        try {
+            // Retrieve the private key from localStorage
+            const privateKeyHex = localStorage.getItem('privateKey');
+            if (!privateKeyHex) {
+                throw new Error('Private key not found in localStorage');
+            }
+    
+            // Convert the private key from hexadecimal to ArrayBuffer
+            const privateKeyBuffer = new Uint8Array(privateKeyHex.match(/.{1,2}/g).map(byte => parseInt(byte, 16))).buffer;
+    
+            // Import the private key from the ArrayBuffer (PKCS8 format)
+            const privateKey = await window.crypto.subtle.importKey(
+                "pkcs8",
+                privateKeyBuffer,
+                { name: "RSA-OAEP", hash: { name: "SHA-256" } },
+                true, // Whether the key is extractable
+                ["decrypt"] // Key usage
+            );
+    
+            // Convert the encrypted session key from hexadecimal to ArrayBuffer
+            const encryptedSessionKeyBuffer = new Uint8Array(encryptedSessionKeyHex.match(/.{1,2}/g).map(byte => parseInt(byte, 16))).buffer;
+    
+            // Decrypt the session key using the private key
+            const decryptedSessionKeyBuffer = await window.crypto.subtle.decrypt(
+                { name: "RSA-OAEP" },
+                privateKey,
+                encryptedSessionKeyBuffer
+            );
+    
+            // Convert the decrypted session key to a string (assuming it's UTF-8 encoded)
+            const decoder = new TextDecoder();
+            const decryptedSessionKey = decoder.decode(decryptedSessionKeyBuffer);
+    
+            return decryptedSessionKey;
+        } catch (error) {
+            console.error("Error in decrypting session key:", error);
+        }
+    }
+    
+    
+    
     const sendMessage = async () => {
         if (!recipient || !message) {
             alert("Both recipient and message fields are required.");
@@ -124,20 +154,7 @@ const App = () => {
                 const sessionKey = generateSessionKey();
                 console.log("Session Key:", sessionKey);
     
-                // // Create an envelope structure
-                // const envelope = {
-                //     sessionKey: sessionKey, // Add session key to the envelope
-                //     message: message, // Actual message to be encrypted
-                // };
-                
-                // // Convert the envelope to a string (JSON format)
-                // const envelopeString = JSON.stringify(envelope);
-                
-                // console.log(envelopeString);
-                
-                 // Ensure constant size
-    
-                // Encrypt the envelope with RC4 using the session key
+               
                 const rc4 = new RC4(sessionKey);
                 const encryptedmessage = rc4.encrypt(message);
 
@@ -208,9 +225,15 @@ const App = () => {
                 for (let msg of combinedMessages) {
                     const sessionKey = await contract.methods.getSessionKey(sender,account).call({ from: account });
                     console.log("session key fetched from block",sessionKey);
-                    const rc4 = new RC4(sessionKey);
+
+
+                    const decryptedSessionKey = await decryptSessionKey(sessionKey);
+
+
+                    
+                    const rc4 = new RC4(decryptedSessionKey);
                     // Separate the encrypted message from the appended session key
-                    const encryptedContent = msg.content.slice(0, -sessionKey.length); // remove the session key from the end
+                    const encryptedContent = msg.content.slice(0, -decryptedSessionKey.length); // remove the session key from the end
                     console.log("encrypted msg that is fetched from block and session key removed:", encryptedContent);    
                     // Decrypt the content
                     msg.content = rc4.decrypt(encryptedContent);

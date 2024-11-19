@@ -108,6 +108,11 @@ async function generateKeys() {
     const privateKeyHex = Array.from(new Uint8Array(privateKeyBuffer))
         .map(byte => byte.toString(16).padStart(2, '0'))
         .join('');
+
+
+        localStorage.setItem('privateKey', privateKeyHex);
+
+
     const blob = new Blob([privateKeyHex], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
