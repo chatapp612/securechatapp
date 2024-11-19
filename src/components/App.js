@@ -91,7 +91,18 @@ const App = () => {
         }
     };
     
+// Function to pad the envelope to ensure a constant size
+const padEnvelope = (message, sessionKeyLength=32) => {
+    const desiredLength = message.length+ sessionKeyLength; // Choose a constant size for the envelope
+    let padded = message;
 
+    // Pad with spaces or a specific character if the string is shorter than the desired length
+    while (padded.length < desiredLength) {
+        padded += ' '; // You can pad with spaces or any other character
+    }
+
+    return padded.substring(0, desiredLength); // Ensure it does not exceed the desired length
+};
     const sendMessage = async () => {
         if (!recipient || !message) {
             alert("Both recipient and message fields are required.");
@@ -121,7 +132,7 @@ const App = () => {
     
                 // Convert the envelope to a string (JSON format)
                 const envelopeString = JSON.stringify(envelope);
-                const paddedEnvelope = padEnvelope(envelopeString); // Ensure constant size
+                const paddedEnvelope = padEnvelope(message,envelopeString); // Ensure constant size
     
                 // Encrypt the envelope with RC4 using the session key
                 const rc4 = new RC4(sessionKey);
