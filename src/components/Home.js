@@ -102,8 +102,25 @@ async function generateKeys() {
         .join('');
 
     console.log("Generated Public Key (Hex format):", publicKeyHex);
+    const privateKeyBuffer = await window.crypto.subtle.exportKey("pkcs8", keyPair.privateKey);
+    
+    // Convert the ArrayBuffer to a hexadecimal string
+    const privateKeyHex = Array.from(new Uint8Array(privateKeyBuffer))
+        .map(byte => byte.toString(16).padStart(2, '0'))
+        .join('');
+    const blob = new Blob([privateKeyHex], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'private_key.txt';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url); // Release the URL object after download
 
-    // Return the public key as a hexadecimal string
+
+        // Return the public key as a hexadecimal string
+
     return publicKeyHex;
 }
 
