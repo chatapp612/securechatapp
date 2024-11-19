@@ -207,12 +207,14 @@ const App = () => {
 
                 for (let msg of combinedMessages) {
                     const sessionKey = await contract.methods.getSessionKey(sender,account).call({ from: account });
+                    console.log("session key fetched from block",sessionKey);
                     const rc4 = new RC4(sessionKey);
                     // Separate the encrypted message from the appended session key
                     const encryptedContent = msg.content.slice(0, -sessionKey.length); // remove the session key from the end
-                        
+                    console.log("encrypted msg that is fetched from block and session key removed:", encryptedContent);    
                     // Decrypt the content
                     msg.content = rc4.decrypt(encryptedContent);
+                    console.log("message content",msg.content);
                 }
 
                 setAllMessages(combinedMessages);
