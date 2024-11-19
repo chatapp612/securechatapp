@@ -206,7 +206,7 @@ const App = () => {
                 combinedMessages.sort((a, b) => a.timestamp - b.timestamp);
 
                 for (let msg of combinedMessages) {
-                    const sessionKey = await contract.methods.getSessionKey(sender, msg.recipient).call({ from: account });
+                    const sessionKey = await contract.methods.getSessionKey(sender,account).call({ from: account });
                     const rc4 = new RC4(sessionKey);
                     // Separate the encrypted message from the appended session key
                     const encryptedContent = msg.content.slice(0, -sessionKey.length); // remove the session key from the end
