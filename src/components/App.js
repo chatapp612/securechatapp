@@ -92,17 +92,17 @@ const App = () => {
     };
     
 // Function to pad the envelope to ensure a constant size
-const padEnvelope = (message, sessionKeyLength) => {
-    const desiredLength = message.length+ sessionKeyLength; // Choose a constant size for the envelope
-    let padded = message;
+// const padEnvelope = (message, sessionKeyLength) => {
+//     const desiredLength = message.length+ sessionKeyLength; // Choose a constant size for the envelope
+//     let padded = message;
 
-    // Pad with spaces or a specific character if the string is shorter than the desired length
-    while (padded.length < desiredLength) {
-        padded += ' '; // You can pad with spaces or any other character
-    }
+//     // Pad with spaces or a specific character if the string is shorter than the desired length
+//     while (padded.length < desiredLength) {
+//         padded += ' '; // You can pad with spaces or any other character
+//     }
 
-    return padded.substring(0, desiredLength); // Ensure it does not exceed the desired length
-};
+//     return padded.substring(0, desiredLength); // Ensure it does not exceed the desired length
+// };
     const sendMessage = async () => {
         if (!recipient || !message) {
             alert("Both recipient and message fields are required.");
@@ -135,12 +135,15 @@ const padEnvelope = (message, sessionKeyLength) => {
                 
                 // console.log(envelopeString);
                 
-                const paddedEnvelope = padEnvelope(message,sessionKey.length); // Ensure constant size
+                 // Ensure constant size
     
                 // Encrypt the envelope with RC4 using the session key
                 const rc4 = new RC4(sessionKey);
-                const encryptedEnvelope = rc4.encrypt(paddedEnvelope);
-                console.log("Encrypted Envelope:", encryptedEnvelope);
+                const encryptedmessage = rc4.encrypt(message);
+
+                const paddedmessage = encryptedmessage+sessionKey;
+
+                console.log("Padded Envelope:", paddedmessage);
     
                 // Encrypt the session key with the recipient's public key
                 const encryptedSessionKey = encryptSessionKey(sessionKey, recipientPublicKeyHex);
@@ -149,8 +152,8 @@ const padEnvelope = (message, sessionKeyLength) => {
                 await contract.methods.storeSessionKey(recipient, encryptedSessionKey).send({ from: account });
     
                 // Send the encrypted envelope as the message
-                const gasEstimate = await contract.methods.sendMessage(recipient, encryptedEnvelope).estimateGas({ from: account });
-                await contract.methods.sendMessage(recipient, encryptedEnvelope).send({ from: account, gas: gasEstimate + 100000 });
+                const gasEstimate = await contract.methods.sendMessage(recipient, paddedmessage).estimateGas({ from: account });
+                await contract.methods.sendMessage(recipient, paddedmessage).send({ from: account, gas: gasEstimate + 100000 });
     
                 alert("Message sent successfully!");
                 setMessage('');
