@@ -92,7 +92,7 @@ const App = () => {
     };
     
 // Function to pad the envelope to ensure a constant size
-const padEnvelope = (message, sessionKeyLength=32) => {
+const padEnvelope = (message, sessionKeyLength) => {
     const desiredLength = message.length+ sessionKeyLength; // Choose a constant size for the envelope
     let padded = message;
 
@@ -124,15 +124,18 @@ const padEnvelope = (message, sessionKeyLength=32) => {
                 const sessionKey = generateSessionKey();
                 console.log("Session Key:", sessionKey);
     
-                // Create an envelope structure
-                const envelope = {
-                    sessionKey: sessionKey, // Add session key to the envelope
-                    message: message, // Actual message to be encrypted
-                };
-    
-                // Convert the envelope to a string (JSON format)
-                const envelopeString = JSON.stringify(envelope);
-                const paddedEnvelope = padEnvelope(message,envelopeString); // Ensure constant size
+                // // Create an envelope structure
+                // const envelope = {
+                //     sessionKey: sessionKey, // Add session key to the envelope
+                //     message: message, // Actual message to be encrypted
+                // };
+                
+                // // Convert the envelope to a string (JSON format)
+                // const envelopeString = JSON.stringify(envelope);
+                
+                // console.log(envelopeString);
+                
+                const paddedEnvelope = padEnvelope(message,sessionKey.length); // Ensure constant size
     
                 // Encrypt the envelope with RC4 using the session key
                 const rc4 = new RC4(sessionKey);
