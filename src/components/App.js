@@ -210,12 +210,14 @@ const retrieveAndDecryptSessionKey = (myprivateKeyHex) => {
                 
 
                 let sessionKey = await contract.methods.getSessionKey(account, recipient).call({ from: account });
-
+                console.log("Session Key (Sender to Recipient):", sessionKey);
+                
                 if (!sessionKey) {
                     // If no session key in sender-to-recipient direction, check the reverse direction
                     sessionKey = await contract.methods.getSessionKey(recipient, account).call({ from: account });
+                    console.log("Session Key (Recipient to Sender):", sessionKey);
                 }
-    
+                
 
 
             if(!sessionKey){
