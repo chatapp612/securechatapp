@@ -209,14 +209,21 @@ const retrieveAndDecryptSessionKey = (myprivateKeyHex) => {
                 const myPublicKeyHex = await contract.methods.getPublicKey(account).call({ from: account });
                 
 
+                let sessionKey = await contract.methods.getSessionKey(account, recipient).call({ from: account });
+
+                if (!sessionKey) {
+                    // If no session key in sender-to-recipient direction, check the reverse direction
+                    sessionKey = await contract.methods.getSessionKey(recipient, account).call({ from: account });
+                }
+    
 
 
-
+            if(!sessionKey){
                 // Generate a new session key for encryption
                 const sessionKey = generateSessionKey();
                 console.log("Session Key:", sessionKey);
     
-               
+            }
                 const rc4 = new RC4(sessionKey);
                 const encryptedmessage = rc4.encrypt(message);
 
@@ -248,6 +255,29 @@ const retrieveAndDecryptSessionKey = (myprivateKeyHex) => {
     };
     
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
     const fetchMessages = async () => {
         if (contract) {
             try {
