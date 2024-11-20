@@ -333,7 +333,7 @@ const retrieveAndDecryptSessionKey = (myprivateKeyHex) => {
         const rc4 = new RC4(decryptedMySessionKey);
                         
                         // Separate the encrypted message from the appended session key
-                        const encryptedContent = msg.content.slice(0, -decryptedMySessionKey.length); // remove the session key from the end
+                        const encryptedContent = content.slice(0, -decryptedMySessionKey.length); // remove the session key from the end
                         console.log("MY encrypted msg that is fetched from block and session key removed:", encryptedContent);
                         
                         // Decrypt the content
