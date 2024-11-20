@@ -132,9 +132,64 @@ const App = () => {
     };
     
     
+  //******************************************************************************************************************************************* */  
     
-    
-    
+  const encryptWithPublicKey = (data, mypublicKeyHex) => {
+    const pemKey = `-----BEGIN PUBLIC KEY-----\n${Buffer.from(mypublicKeyHex, 'hex').toString('base64')}\n-----END PUBLIC KEY-----`;
+
+    const buffer = Buffer.from(data, 'utf-8');
+
+    const encrypted = crypto.publicEncrypt(
+        { key: pemKey, padding: crypto.constants.RSA_PKCS1_PADDING },
+        buffer
+    );
+
+    return encrypted.toString('hex');
+};
+
+const decryptWithPrivateKey = (encryptedData, myprivateKeyHex) => {
+    const pemPrivateKey = `-----BEGIN PRIVATE KEY-----\n${Buffer.from(myprivateKeyHex, 'hex').toString('base64')}\n-----END PRIVATE KEY-----`;
+
+    const encryptedBuffer = Buffer.from(encryptedData, 'hex');
+
+    const decrypted = crypto.privateDecrypt(
+        { key: pemPrivateKey, padding: crypto.constants.RSA_PKCS1_PADDING },
+        encryptedBuffer
+    );
+
+    return decrypted.toString('utf-8');
+};
+
+const storeMySessionKey = (sessionKey, mypublicKeyHex) => {
+    try {
+        const encryptedSessionKey = encryptWithPublicKey(sessionKey, mypublicKeyHex);
+        localStorage.setItem('encryptedSessionKey', encryptedSessionKey);
+        console.log("Encrypted session key stored in localStorage.");
+    } catch (error) {
+        console.error("Error in storing session key:", error);
+    }
+};
+
+const retrieveAndDecryptSessionKey = (myprivateKeyHex) => {
+    try {
+        const encryptedSessionKey = localStorage.getItem('encryptedSessionKey');
+        if (!encryptedSessionKey) {
+            console.error("No encrypted session key found in localStorage.");
+            return null;
+        }
+
+        const decryptedSessionKey = decryptWithPrivateKey(encryptedSessionKey, myprivateKeyHex);
+        console.log("Decrypted session key:", decryptedSessionKey);
+        return decryptedSessionKey;
+    } catch (error) {
+        console.error("Error in retrieving or decrypting session key:", error);
+        return null;
+    }
+};
+  
+
+  //******************************************************************************************************************************************* */  
+
     const sendMessage = async () => {
         if (!recipient || !message) {
             alert("Both recipient and message fields are required.");
@@ -145,13 +200,18 @@ const App = () => {
             try {
                 // Fetch recipient's public key
                 const recipientPublicKeyHex = await contract.methods.getPublicKey(recipient).call({ from: account });
-                console.log("Public Key:", recipientPublicKeyHex);
+                console.log("Recipient Public Key:", recipientPublicKeyHex);
     
                 if (!recipientPublicKeyHex) {
                     console.error("No public key found for recipient.");
                     return;
                 }
-    
+                const myPublicKeyHex = await contract.methods.getPublicKey(account).call({ from: account });
+                
+
+
+
+
                 // Generate a new session key for encryption
                 const sessionKey = generateSessionKey();
                 console.log("Session Key:", sessionKey);
@@ -169,7 +229,7 @@ const App = () => {
                 console.log("encrypted session key", encryptedSessionKey);
                 // Store the encrypted session key on-chain
                 await contract.methods.storeSessionKey(recipient, encryptedSessionKey).send({ from: account });
-    
+                storeMySessionKey(sessionKey, myPublicKeyHex);
                 // Send the encrypted envelope as the message
                 const gasEstimate = await contract.methods.sendMessage(recipient, paddedmessage).estimateGas({ from: account });
                 await contract.methods.sendMessage(recipient, paddedmessage).send({ from: account, gas: gasEstimate + 100000 });
@@ -225,21 +285,26 @@ const App = () => {
                 combinedMessages.sort((a, b) => a.timestamp - b.timestamp);
 
                 for (let msg of combinedMessages) {
-                    const sessionKey = await contract.methods.getSessionKey(sender,account).call({ from: account });
-                    console.log("session key fetched from block",sessionKey);
-
-
-                    const decryptedSessionKey = await decryptSessionKey(sessionKey);
-
-
-                    
-                    const rc4 = new RC4(decryptedSessionKey);
-                    // Separate the encrypted message from the appended session key
-                    const encryptedContent = msg.content.slice(0, -decryptedSessionKey.length); // remove the session key from the end
-                    console.log("encrypted msg that is fetched from block and session key removed:", encryptedContent);    
-                    // Decrypt the content
-                    msg.content = rc4.decrypt(encryptedContent);
-                    console.log("message content",msg.content);
+                    const sessionKey = await contract.methods.getSessionKey(sender, account).call({ from: account });
+                    console.log("session key fetched from block", sessionKey);
+    
+                    if (sender !== account) {
+                        // For received messages, decrypt as usual
+                        const decryptedSessionKey = await decryptSessionKey(sessionKey);
+                        const rc4 = new RC4(decryptedSessionKey);
+                        
+                        // Separate the encrypted message from the appended session key
+                        const encryptedContent = msg.content.slice(0, -decryptedSessionKey.length); // remove the session key from the end
+                        console.log("encrypted msg that is fetched from block and session key removed:", encryptedContent);
+                        
+                        // Decrypt the content
+                        msg.content = rc4.decrypt(encryptedContent);
+                        console.log("message content", msg.content);
+                    } else {
+                        // For sent messages, redirect decryption to a new function
+                        msg.content = await decryptSentMessage(msg.content, sessionKey);
+                        console.log("Decrypted sent message content", msg.content);
+                    }
                 }
 
                 setAllMessages(combinedMessages);
@@ -252,6 +317,35 @@ const App = () => {
             alert("Contract not initialized.");
         }
     };
+
+
+
+
+
+    const decryptSentMessage = async (content, sessionKey) => {
+        // Implement your new decryption logic here
+        const myprivateKeyHex = localStorage.getItem('privateKey');
+        const decryptedMySessionKey = retrieveAndDecryptSessionKey(myprivateKeyHex);
+
+        console.log("Decrypting sent message with new method...");
+        // This is just a placeholder, replace it with actual decryption logic
+
+        const rc4 = new RC4(decryptedMySessionKey);
+                        
+                        // Separate the encrypted message from the appended session key
+                        const encryptedContent = msg.content.slice(0, -decryptedMySessionKey.length); // remove the session key from the end
+                        console.log("MY encrypted msg that is fetched from block and session key removed:", encryptedContent);
+                        
+                        // Decrypt the content
+                        content = rc4.decrypt(encryptedContent);
+                        console.log("MY message content", content);
+        return content;
+    };
+
+
+
+
+
 
     const goToAddContactPage = () => {
         navigate('/add-contact');
