@@ -198,18 +198,9 @@ const retrieveAndDecryptSessionKey = (myprivateKeyHex) => {
     
         if (contract) {
             try {
-                // Fetch recipient's public key
-                const recipientPublicKeyHex = await contract.methods.getPublicKey(recipient).call({ from: account });
-                console.log("Recipient Public Key:", recipientPublicKeyHex);
-    
-                if (!recipientPublicKeyHex) {
-                    console.error("No public key found for recipient.");
-                    return;
-                }
-                const myPublicKeyHex = await contract.methods.getPublicKey(account).call({ from: account });
-                
+                console.log("in send msg");
 
-                let sessionKey = await contract.methods.getSessionKey(account, recipient).call({ from: account });
+                const sessionKey = await contract.methods.getSessionKey(account, recipient).call({ from: account });
                 console.log("Session Key (Sender to Recipient):", sessionKey);
                 
                 if (!sessionKey) {
@@ -219,13 +210,31 @@ const retrieveAndDecryptSessionKey = (myprivateKeyHex) => {
                 }
                 
 
-
             if(!sessionKey){
                 // Generate a new session key for encryption
+                console.log("generating new session key");
+
                 const sessionKey = generateSessionKey();
                 console.log("Session Key:", sessionKey);
     
             }
+
+
+
+// Fetch recipient's public key
+const recipientPublicKeyHex = await contract.methods.getPublicKey(recipient).call({ from: account });
+console.log("Recipient Public Key:", recipientPublicKeyHex);
+
+if (!recipientPublicKeyHex) {
+    console.error("No public key found for recipient.");
+    return;
+}
+const myPublicKeyHex = await contract.methods.getPublicKey(account).call({ from: account });
+
+
+
+
+
                 const rc4 = new RC4(sessionKey);
                 const encryptedmessage = rc4.encrypt(message);
 
