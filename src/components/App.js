@@ -288,7 +288,7 @@ const retrieveAndDecryptSessionKey = (myprivateKeyHex) => {
                     const sessionKey = await contract.methods.getSessionKey(sender, account).call({ from: account });
                     console.log("session key fetched from block", sessionKey);
     
-                    if (sender !== account) {
+                    if (msg.direction === 'received') {
                         // For received messages, decrypt as usual
                         const decryptedSessionKey = await decryptSessionKey(sessionKey);
                         const rc4 = new RC4(decryptedSessionKey);
@@ -301,6 +301,7 @@ const retrieveAndDecryptSessionKey = (myprivateKeyHex) => {
                         msg.content = rc4.decrypt(encryptedContent);
                         console.log("message content", msg.content);
                     } else {
+                        console.log("inside else")
                         // For sent messages, redirect decryption to a new function
                         msg.content = await decryptSentMessage(msg.content, sessionKey);
                         console.log("Decrypted sent message content", msg.content);
@@ -330,15 +331,15 @@ const retrieveAndDecryptSessionKey = (myprivateKeyHex) => {
         console.log("Decrypting sent message with new method...");
         // This is just a placeholder, replace it with actual decryption logic
 
-        const rc4 = new RC4(decryptedMySessionKey);
+        const rc41 = new RC4(decryptedMySessionKey);
                         
-                        // Separate the encrypted message from the appended session key
-                        const encryptedContent = content.slice(0, -decryptedMySessionKey.length); // remove the session key from the end
-                        console.log("MY encrypted msg that is fetched from block and session key removed:", encryptedContent);
-                        
-                        // Decrypt the content
-                        content = rc4.decrypt(encryptedContent);
-                        console.log("MY message content", content);
+            // Separate the encrypted message from the appended session key
+            const encryptedContent = content.slice(0, -decryptedMySessionKey.length); // remove the session key from the end
+            console.log("MY encrypted msg that is fetched from block and session key removed:", encryptedContent);
+
+            // Decrypt the content
+            content = rc41.decrypt(encryptedContent);
+console.log("MY message content", content);
         return content;
     };
 
