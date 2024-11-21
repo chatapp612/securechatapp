@@ -65,8 +65,8 @@ const generateKeys = async () => {
     // Initialize Sodium
     await sodium.ready;
 
-    const keyPair = sodium.crypto_kx_keypair();
-
+    const keyPair = sodium.crypto_box_keypair();
+console.log("keypairs generated");
     // Convert public and private keys to hexadecimal
     const publicKeyHex = sodium.to_hex(keyPair.publicKey);
     const privateKeyHex = sodium.to_hex(keyPair.privateKey);
