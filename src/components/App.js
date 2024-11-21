@@ -104,7 +104,7 @@ console.log("my pvt key:",privateKeyHex);
         // Use HKDF to derive a key from the rawSecret
 // Step 1: Apply HMAC to the raw secret with salt
 const hmac1 = sodium.crypto_auth(rawSecret, salt); // HMAC with raw secret and salt
-console.log("hmac1",hmac1.length);
+console.log(hmac1);
 // Step 2: Apply HMAC again with the result from the previous step and the info string
 const hmac2 = sodium.crypto_auth(hmac1, info); // Second HMAC
 console.log("hmac2");
