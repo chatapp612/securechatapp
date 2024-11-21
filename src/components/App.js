@@ -73,6 +73,7 @@ const App = () => {
   //******************************************************************************************************************************************* */  
   const deriveEncryptionKey = async () => {
     try {
+        console.log("indise derivekeyfunc");
         // Fetch the recipient's public key from the smart contract using the recipient state
         const recipientPublicKeyHex = await contract.methods.getPublicKey(recipient).call({ from: account });
         console.log("public key of recipient:",recipientPublicKeyHex);
