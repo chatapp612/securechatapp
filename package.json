@@ -21,6 +21,7 @@
     "elliptic": "^6.6.1",
     "ethers": "^6.13.2",
     "js-sha256": "^0.11.0",
+    "libsodium": "^0.7.15",
     "react": "16.8.4",
     "react-bootstrap": "1.0.0-beta.5",
     "react-dom": "16.8.4",
@@ -30,13 +31,13 @@
     "web3": "1.0.0-beta.55"
   },
   "scripts": {
-  "predeploy": "npm run build",
-  "deploy": "gh-pages -d build",
-  "start": "NODE_OPTIONS=--openssl-legacy-provider npm start",
-  "build": "NODE_OPTIONS=--openssl-legacy-provider react-scripts build",
-  "test": "react-scripts test",
-  "eject": "react-scripts eject"
-},
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
+    "start": "NODE_OPTIONS=--openssl-legacy-provider npm start",
+    "build": "NODE_OPTIONS=--openssl-legacy-provider react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
   "eslintConfig": {
     "extends": "react-app"
   },
