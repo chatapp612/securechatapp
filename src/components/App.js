@@ -79,7 +79,7 @@ const App = () => {
         console.log("public key of recipient:",recipientPublicKeyHex);
         // Retrieve your private key from local storage using your account address
         const privateKeyHex = localStorage.getItem(`privateKey-${account}`);
-console.log("my pvt key:",privateKey);
+console.log("my pvt key:",privateKeyHex);
         if (!privateKeyHex) {
             throw new Error("Private key not found in localStorage.");
         }
