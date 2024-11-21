@@ -68,73 +68,59 @@ const App = () => {
         }
     }, [contract, account]);
 
-    const generateSessionKey = () => {
-        return crypto.randomBytes(16).toString('hex');
-    };
-
-    const encryptSessionKey = (sessionKey, recipientPublicKeyHex) => {
-        try {
-            if (!recipientPublicKeyHex) {
-                console.error("Recipient public key is null or undefined.");
-                return;
-            }
-    
-            // Convert the recipient's public key from hex to PEM format for encryption
-            const pemKey = `-----BEGIN PUBLIC KEY-----\n${Buffer.from(recipientPublicKeyHex, 'hex').toString('base64')}\n-----END PUBLIC KEY-----`;
-            console.log(pemKey);
-    
-            // Convert the session key (string) into a buffer
-            const buffer = Buffer.from(sessionKey, 'utf-8');
-    
-            // Encrypt the session key using the recipient's public key (RSA encryption)
-            const encrypted = crypto.publicEncrypt(
-                { key: pemKey, padding: crypto.constants.RSA_PKCS1_PADDING },
-                buffer
-            );
-    
-            // Return the encrypted session key as a hexadecimal string (which is a valid string for Solidity)
-            return encrypted.toString('hex');
-        } catch (error) {
-            console.error("Error in encrypting session key:", error);
-        }
-    };
-    
-    
-    const decryptSessionKey = async (encryptedSessionKey) => {
-        try {
-            // Fetch the private key from localStorage
-            const privateKeyHex = localStorage.getItem('privateKey');
-    
-            if (!privateKeyHex) {
-                console.error("Private key not found in localStorage.");
-                return;
-            }
-    
-            // Convert the private key from hex to PEM format
-            const pemPrivateKey = `-----BEGIN PRIVATE KEY-----\n${Buffer.from(privateKeyHex, 'hex').toString('base64')}\n-----END PRIVATE KEY-----`;
-    
-            // Convert the encrypted session key from hex to a Buffer
-            const encryptedBuffer = Buffer.from(encryptedSessionKey, 'hex');
-    
-            // Decrypt the session key using the private key
-            const decrypted = crypto.privateDecrypt(
-                { key: pemPrivateKey, padding: crypto.constants.RSA_PKCS1_PADDING },
-                encryptedBuffer
-            );
-    
-            // Convert the decrypted Buffer to a string (session key)
-            const decryptedSessionKey = decrypted.toString('utf-8');
-            console.log("Decrypted Session Key:", decryptedSessionKey);
-    
-            return decryptedSessionKey;
-        } catch (error) {
-            console.error("Error in decrypting session key:", error);
-        }
-    };
     
     
   //******************************************************************************************************************************************* */  
+  const deriveEncryptionKey = async () => {
+    try {
+        // Fetch the recipient's public key from the smart contract using the recipient state
+        const recipientPublicKeyHex = await contract.methods.getPublicKey(recipient).call({ from: account });
+
+        // Retrieve your private key from local storage using your account address
+        const privateKeyHex = localStorage.getItem(`privateKey-${account}`);
+
+        if (!privateKeyHex) {
+            throw new Error("Private key not found in localStorage.");
+        }
+
+        // Convert hex keys to Uint8Array
+        const recipientPublicKey = sodium.from_hex(recipientPublicKeyHex);
+        const privateKey = sodium.from_hex(privateKeyHex);
+
+        // Calculate the shared secret using your private key and the recipient's public key
+        const rawSecret = sodium.crypto_scalarmult(privateKey, recipientPublicKey);
+
+        console.log("Derived Shared Secret (Hex format):", sodium.to_hex(rawSecret));
+
+        // Set a salt (can be a fixed value or a random value, depending on your application)
+        const salt = sodium.randombytes_buf(32); // Using 32 bytes of random data as salt
+        
+        // Set the info string (can be "encryption", "authentication", or any context)
+        const info = sodium.from_string('encryption');
+
+        // Use HKDF to derive a key from the rawSecret
+        const derivedKey = sodium.crypto_kdf_derive_from_key(32, rawSecret, salt, info) // Derive 32 bytes key
+
+        console.log("Derived Encryption Key (Hex format):", sodium.to_hex(derivedKey));
+        
+
+        const key1 = `${account}_${recipient}`;
+        const key2 = `${recipient}_${account}`;
     
+        // Store the derived key in local storage for both combinations
+        localStorage.setItem(key1, sodium.to_hex(derivedKey));
+        localStorage.setItem(key2, sodium.to_hex(derivedKey));
+    
+        console.log(`Derived encryption key stored for ${key1} and ${key2}`);
+
+
+        return sodium.to_hex(derivedKey); // Return the derived encryption key
+    } catch (error) {
+        console.error("Error deriving encryption key:", error);
+    }
+};
+
+
   
 
   //******************************************************************************************************************************************* */  
@@ -149,57 +135,25 @@ const App = () => {
             try {
                 console.log("in send msg");
 
-                const sessionKey = await contract.methods.getSessionKey(account, sender).call({ from: account });
-                //console.log("Session Key (Sender to Recipient):", sessionKey);
-                
-                if (!sessionKey) {
-                    // If no session key in sender-to-recipient direction, check the reverse direction
-                    sessionKey = await contract.methods.getSessionKey(sender, account).call({ from: account });
-                   // console.log("Session Key (Recipient to Sender):", sessionKey);
-                }
-                
 
-            if(!sessionKey){
-                // Generate a new session key for encryption
-                console.log("generating new session key");
+              
+            let sessionKeyHex = localStorage.getItem(`${account}_${recipient}`) ||
+            localStorage.getItem(`${recipient}_${account}`);
 
-                const sessionKey = generateSessionKey();
-                console.log("Session Key:", sessionKey);
-    
+
+
+            if (!sessionKeyHex) {
+                console.log("Session key not found, deriving a new one...");
+                sessionKeyHex = deriveEncryptionKey();
+            
+            
             }
-
-
-
-// Fetch recipient's public key
-const recipientPublicKeyHex = await contract.methods.getPublicKey(recipient).call({ from: account });
-console.log("Recipient Public Key:", recipientPublicKeyHex);
-
-if (!recipientPublicKeyHex) {
-    console.error("No public key found for recipient.");
-    return;
-}
-const myPublicKeyHex = await contract.methods.getPublicKey(account).call({ from: account });
-
-
-
-
-
-                const rc4 = new RC4(sessionKey);
+                const rc4 = new RC4(sessionKeyHex);
                 const encryptedmessage = rc4.encrypt(message);
 
-                const paddedmessage = encryptedmessage+sessionKey;
-
-                console.log("Padded Envelope:", paddedmessage);
-    
-                // Encrypt the session key with the recipient's public key
-                const encryptedSessionKey =  encryptSessionKey(sessionKey, recipientPublicKeyHex);
-                console.log("encrypted session key", encryptedSessionKey);
-                // Store the encrypted session key on-chain
-                await contract.methods.storeSessionKey(recipient, encryptedSessionKey).send({ from: account });
-                storeMySessionKey(sessionKey, myPublicKeyHex);
-                // Send the encrypted envelope as the message
-                const gasEstimate = await contract.methods.sendMessage(recipient, paddedmessage).estimateGas({ from: account });
-                await contract.methods.sendMessage(recipient, paddedmessage).send({ from: account, gas: gasEstimate + 100000 });
+                
+                const gasEstimate = await contract.methods.sendMessage(recipient, encryptedmessage).estimateGas({ from: account });
+                await contract.methods.sendMessage(recipient, encryptedmessage).send({ from: account, gas: gasEstimate + 100000 });
     
                 alert("Message sent successfully!");
                 setMessage('');
@@ -256,27 +210,19 @@ const myPublicKeyHex = await contract.methods.getPublicKey(account).call({ from:
                 combinedMessages.sort((a, b) => a.timestamp - b.timestamp);
 
                 for (let msg of combinedMessages) {
-                    const sessionKey = await contract.methods.getSessionKey(sender, account).call({ from: account });
-                    console.log("session key fetched from block", sessionKey);
-    
-                    if (msg.direction === 'received') {
-                        // For received messages, decrypt as usual
-                        const decryptedSessionKey = await decryptSessionKey(sessionKey);
-                        const rc4 = new RC4(decryptedSessionKey);
-                        
-                        // Separate the encrypted message from the appended session key
-                        const encryptedContent = msg.content.slice(0, -decryptedSessionKey.length); // remove the session key from the end
-                        console.log("encrypted msg that is fetched from block and session key removed:", encryptedContent);
-                        
+                    let sessionKeyHex1 = localStorage.getItem(`${account}_${recipient}`) ||
+                    localStorage.getItem(`${recipient}_${account}`);
+        
+        
+                    
+                        // For all messages, decrypt as usual
+                       console.log("encrypted msg that is fetched from block", msg.content);
+                        const rc4 = new RC4(sessionKeyHex1);
                         // Decrypt the content
-                        msg.content = rc4.decrypt(encryptedContent);
-                        console.log("message content", msg.content);
-                    } else {
-                        console.log("inside else")
-                        // For sent messages, redirect decryption to a new function
-                        msg.content = await decryptSentMessage(msg.content, sessionKey);
-                        console.log("Decrypted sent message content", msg.content);
-                    }
+                        msg.content = rc4.decrypt(msg.content);
+                        console.log("message content decrpted in plaintext", msg.content);
+                    
+                    
                 }
 
                 setAllMessages(combinedMessages);

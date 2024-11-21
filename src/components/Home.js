@@ -31,26 +31,6 @@ const Home = () => {
 
 
 
-    async function generatePrivateKeyFromAddress() {
-        // Request access to the MetaMask account
-        await window.ethereum.request({ method: 'eth_requestAccounts' });
-    
-        // Get the current Ethereum address from MetaMask
-        const accounts = await web3.eth.getAccounts();
-        const accountAddress = accounts[0];
-    
-        console.log("MetaMask Ethereum Address:", accountAddress);
-    
-        // Use the Ethereum address as a seed for generating a private key
-        // Hash the address to generate a 'random' private key (this is not cryptographically secure)
-        const pseudoRandomPrivateKey = sha256(accountAddress); // Hash the address to simulate randomness
-    
-        // Private key is derived from the hash - ensure it is in the expected format (remove 0x)
-        const privateKey = `0x${pseudoRandomPrivateKey.slice(0, 64)}`; // Slice to get the correct length (32 bytes)
-    
-        console.log("Generated Private Key (from address):", privateKey);
-    
-        return privateKey;    }
 
 
     const checkIfRegistered = async () => {
@@ -79,8 +59,7 @@ const Home = () => {
   
     
     // Method to generate an RSA public/private key pair using the Web Crypto API
-// Method to generate an RSA public/private key pair using the Web Crypto API
-const generateKeys = async (account) => {
+const generateKeys = async () => {
     // Initialize Sodium
     await sodium.ready;
 
