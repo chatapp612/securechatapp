@@ -75,18 +75,19 @@ const App = () => {
     try {
         // Fetch the recipient's public key from the smart contract using the recipient state
         const recipientPublicKeyHex = await contract.methods.getPublicKey(recipient).call({ from: account });
-
+        console.log("public key of recipient:",recipientPublicKeyHex);
         // Retrieve your private key from local storage using your account address
         const privateKeyHex = localStorage.getItem(`privateKey-${account}`);
-
+console.log("my pvt key:",privateKey);
         if (!privateKeyHex) {
             throw new Error("Private key not found in localStorage.");
         }
 
         // Convert hex keys to Uint8Array
         const recipientPublicKey = sodium.from_hex(recipientPublicKeyHex);
+        
         const privateKey = sodium.from_hex(privateKeyHex);
-
+        console.log("converted from hex to uint8");
         // Calculate the shared secret using your private key and the recipient's public key
         const rawSecret = sodium.crypto_scalarmult(privateKey, recipientPublicKey);
 
