@@ -73,6 +73,7 @@ console.log("keypairs generated");
 
     console.log("Generated Public Key (Hex format):", publicKeyHex);
     console.log("Generated Private Key (Hex format):", privateKeyHex);
+    console.log("my public keytype:",typeof(publicKeyHex));
 
     // Store private key in local storage, using the account address as the key
     localStorage.setItem(`privateKey-${account}`, privateKeyHex);
@@ -100,7 +101,6 @@ const handleSignUpSubmit = async () => {
     try {
         // Generate the public and private keys
         const publicKeyHex = await generateKeys(); // Await for the generated public key in hex format
-        console.log("my public key");
         
 
         // Register the user on the blockchain with the username and public key
