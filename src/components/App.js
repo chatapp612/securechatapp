@@ -137,15 +137,15 @@ const App = () => {
 
 
               
-            let sessionKeyHex = localStorage.getItem(`${account}_${recipient}`) ||
+            let sessionKeyHex =  localStorage.getItem(`${account}_${recipient}`) ||
             localStorage.getItem(`${recipient}_${account}`);
 
 
 
             if (!sessionKeyHex) {
                 console.log("Session key not found, deriving a new one...");
-                sessionKeyHex = deriveEncryptionKey();
-            
+                sessionKeyHex = await deriveEncryptionKey();
+                
             
             }
                 const rc4 = new RC4(sessionKeyHex);
