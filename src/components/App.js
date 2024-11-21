@@ -100,6 +100,7 @@ console.log("my pvt key:",privateKeyHex);
         // Set the info string (can be "encryption", "authentication", or any context)
         const info = sodium.from_string('encryption');
 
+        console.log("raw secret type:",typeof(rawSecret));
         // Use HKDF to derive a key from the rawSecret
         const derivedKey = sodium.crypto_kdf_derive_from_key(32, rawSecret, salt, info) // Derive 32 bytes key
 
