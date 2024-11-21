@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
 import { useWeb3 } from '../contexts/Web3Context.js';
 import crypto from 'crypto';
-const sodium = require('libsodium-wrappers');
+import sodium from "libsodium-wrappers";
 
 class RC4 {
     constructor(key) {
