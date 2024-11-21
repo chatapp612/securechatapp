@@ -88,7 +88,7 @@ console.log("my pvt key:",privateKeyHex);
         const recipientPublicKey = sodium.from_hex(recipientPublicKeyHex);
         
         const privateKey = sodium.from_hex(privateKeyHex);
-        console.log("converted from hex to uint8");
+        console.log("converted pvt key from hex to uint8",privateKey);
         // Calculate the shared secret using your private key and the recipient's public key
         const rawSecret = sodium.crypto_scalarmult(privateKey, recipientPublicKey);
 
