@@ -100,7 +100,7 @@ console.log("my pvt key:",privateKeyHex);
         // Set the info string (can be "encryption", "authentication", or any context)
         const info = sodium.from_string('encryption');
 
-        console.log("raw secret type:",typeof(rawSecret));
+        console.log("raw secret type:",rawSecret);
         // Use HKDF to derive a key from the rawSecret
 // Step 1: Apply HMAC to the raw secret with salt
 const hmac1 = sodium.crypto_auth(rawSecret, salt); // HMAC with raw secret and salt
