@@ -100,14 +100,14 @@ const handleSignUpSubmit = async () => {
     try {
         // Generate the public and private keys
         const publicKeyHex = await generateKeys(); // Await for the generated public key in hex format
-
+        console.log("my public key");
         
 
         // Register the user on the blockchain with the username and public key
         await contract.methods.registerUser(username, publicKeyHex, password).send({ from: account });
-
         // Store the public key on the blockchain if needed
         await contract.methods.updatePublicKey(publicKeyHex).send({ from: account });
+        console.log("public key stored on block");
 
         setOpen(false);
         navigate('/app', { state: { account, username } }); // Navigate to the main app with account and username
