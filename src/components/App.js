@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
 import { useWeb3 } from '../contexts/Web3Context.js';
 import crypto from 'crypto';
+import sodium from "libsodium-wrappers";
 
 class RC4 {
     constructor(key) {
@@ -134,58 +135,6 @@ const App = () => {
     
   //******************************************************************************************************************************************* */  
     
-  const encryptWithPublicKey = (data, mypublicKeyHex) => {
-    const pemKey = `-----BEGIN PUBLIC KEY-----\n${Buffer.from(mypublicKeyHex, 'hex').toString('base64')}\n-----END PUBLIC KEY-----`;
-
-    const buffer = Buffer.from(data, 'utf-8');
-
-    const encrypted = crypto.publicEncrypt(
-        { key: pemKey, padding: crypto.constants.RSA_PKCS1_PADDING },
-        buffer
-    );
-
-    return encrypted.toString('hex');
-};
-
-const decryptWithPrivateKey = (encryptedData, myprivateKeyHex) => {
-    const pemPrivateKey = `-----BEGIN PRIVATE KEY-----\n${Buffer.from(myprivateKeyHex, 'hex').toString('base64')}\n-----END PRIVATE KEY-----`;
-
-    const encryptedBuffer = Buffer.from(encryptedData, 'hex');
-
-    const decrypted = crypto.privateDecrypt(
-        { key: pemPrivateKey, padding: crypto.constants.RSA_PKCS1_PADDING },
-        encryptedBuffer
-    );
-
-    return decrypted.toString('utf-8');
-};
-
-const storeMySessionKey = (sessionKey, mypublicKeyHex) => {
-    try {
-        const encryptedSessionKey = encryptWithPublicKey(sessionKey, mypublicKeyHex);
-        localStorage.setItem('encryptedSessionKey', encryptedSessionKey);
-        console.log("Encrypted session key stored in localStorage.");
-    } catch (error) {
-        console.error("Error in storing session key:", error);
-    }
-};
-
-const retrieveAndDecryptSessionKey = (myprivateKeyHex) => {
-    try {
-        const encryptedSessionKey = localStorage.getItem('encryptedSessionKey');
-        if (!encryptedSessionKey) {
-            console.error("No encrypted session key found in localStorage.");
-            return null;
-        }
-
-        const decryptedSessionKey = decryptWithPrivateKey(encryptedSessionKey, myprivateKeyHex);
-        console.log("Decrypted session key:", decryptedSessionKey);
-        return decryptedSessionKey;
-    } catch (error) {
-        console.error("Error in retrieving or decrypting session key:", error);
-        return null;
-    }
-};
   
 
   //******************************************************************************************************************************************* */  
@@ -200,13 +149,13 @@ const retrieveAndDecryptSessionKey = (myprivateKeyHex) => {
             try {
                 console.log("in send msg");
 
-                const sessionKey = await contract.methods.getSessionKey(account, recipient).call({ from: account });
-                console.log("Session Key (Sender to Recipient):", sessionKey);
+                const sessionKey = await contract.methods.getSessionKey(account, sender).call({ from: account });
+                //console.log("Session Key (Sender to Recipient):", sessionKey);
                 
                 if (!sessionKey) {
                     // If no session key in sender-to-recipient direction, check the reverse direction
-                    sessionKey = await contract.methods.getSessionKey(recipient, account).call({ from: account });
-                    console.log("Session Key (Recipient to Sender):", sessionKey);
+                    sessionKey = await contract.methods.getSessionKey(sender, account).call({ from: account });
+                   // console.log("Session Key (Recipient to Sender):", sessionKey);
                 }
                 
 
@@ -265,25 +214,6 @@ const myPublicKeyHex = await contract.methods.getPublicKey(account).call({ from:
         }
     };
     
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -6,7 +6,7 @@ import { sha256 } from 'js-sha256'; // Hash function to simulate randomness base
 const crypto = require('crypto');
     const fs = require('fs');
 
-
+import sodium from "libsodium-wrappers";
 
 
 
@@ -80,55 +80,36 @@ const Home = () => {
     
     // Method to generate an RSA public/private key pair using the Web Crypto API
 // Method to generate an RSA public/private key pair using the Web Crypto API
-async function generateKeys() {
-    // Generate an RSA key pair
-    const keyPair = await window.crypto.subtle.generateKey(
-        {
-            name: "RSA-OAEP",
-            modulusLength: 1024,
-            publicExponent: new Uint8Array([1, 0, 1]),
-            hash: { name: "SHA-256" },
-        },
-        true, // Whether the key is extractable (i.e., can be used outside the Web Crypto API)
-        ["encrypt", "decrypt"] // Key usages
-    );
+const generateKeys = async (account) => {
+    // Initialize Sodium
+    await sodium.ready;
 
-    // Export the public key to SPKI format
-    const publicKeyBuffer = await window.crypto.subtle.exportKey("spki", keyPair.publicKey);
-    
-    // Convert the ArrayBuffer to a hexadecimal string
-    const publicKeyHex = Array.from(new Uint8Array(publicKeyBuffer))
-        .map(byte => byte.toString(16).padStart(2, '0'))
-        .join('');
+    const keyPair = sodium.crypto_kx_keypair();
+
+    // Convert public and private keys to hexadecimal
+    const publicKeyHex = sodium.to_hex(keyPair.publicKey);
+    const privateKeyHex = sodium.to_hex(keyPair.privateKey);
 
     console.log("Generated Public Key (Hex format):", publicKeyHex);
-    const privateKeyBuffer = await window.crypto.subtle.exportKey("pkcs8", keyPair.privateKey);
-    
-    // Convert the ArrayBuffer to a hexadecimal string
-    const privateKeyHex = Array.from(new Uint8Array(privateKeyBuffer))
-        .map(byte => byte.toString(16).padStart(2, '0'))
-        .join('');
+    console.log("Generated Private Key (Hex format):", privateKeyHex);
 
+    // Store private key in local storage, using the account address as the key
+    localStorage.setItem(`privateKey-${account}`, privateKeyHex);
+    console.log(`Private key for ${account} stored in local storage!`);
 
-        localStorage.setItem('privateKey', privateKeyHex);
-    console.log("pvt key stored in local sotrage!");
-
-    const blob = new Blob([privateKeyHex], { type: 'text/plain' });
+    // Provide a download option for the private key
+    const blob = new Blob([privateKeyHex], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = url;
-    link.download = 'private_key.txt';
+    link.download = "private_key.txt";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url); // Release the URL object after download
 
-
-        // Return the public key as a hexadecimal string
-
-    return publicKeyHex;
-}
-
+    return publicKeyHex; // Return the public key
+};
 
 const handleSignUpSubmit = async () => {
     if (!username || !password) { // Validate username and password
