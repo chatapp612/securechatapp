@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { useWeb3 } from '../contexts/Web3Context.js'; // Import the custom hook for web3 context
 import Web3 from 'web3'; // Import Web3 to generate keys
 import { sha256 } from 'js-sha256'; // Hash function to simulate randomness based on the address
+import sodium from "libsodium-wrappers";
+
+
 const crypto = require('crypto');
     const fs = require('fs');
 
-import sodium from "libsodium-wrappers";
 
 
 
