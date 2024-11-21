@@ -239,32 +239,6 @@ const App = () => {
 
 
 
-
-    const decryptSentMessage = async (content, sessionKey) => {
-        // Implement your new decryption logic here
-        const myprivateKeyHex = localStorage.getItem('privateKey');
-        const decryptedMySessionKey = retrieveAndDecryptSessionKey(myprivateKeyHex);
-
-        console.log("Decrypting sent message with new method...");
-        // This is just a placeholder, replace it with actual decryption logic
-
-        const rc41 = new RC4(decryptedMySessionKey);
-                        
-            // Separate the encrypted message from the appended session key
-            const encryptedContent1 = content.slice(0, -decryptedMySessionKey.length); // remove the session key from the end
-            console.log("MY encrypted msg that is fetched from block and session key removed:", encryptedContent1);
-
-            // Decrypt the content
-            content = rc41.decrypt(encryptedContent1);
-console.log("MY message content", content);
-        return content;
-    };
-
-
-
-
-
-
     const goToAddContactPage = () => {
         navigate('/add-contact');
     };
