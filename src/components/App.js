@@ -264,7 +264,7 @@ const subkey_len = 32; // Desired length of the derived key in bytes
                 <ul className="senders-list">
                     {senders.length > 0 ? (
                         senders.map((sender, index) => (
-                            <li key={index} onClick={() => fetchMessagesForSender(recipient)}>
+                            <li key={index} onClick={() => fetchMessagesForSender(sender)}>
                                 <span>{sender}</span>
                             </li>
                         ))
