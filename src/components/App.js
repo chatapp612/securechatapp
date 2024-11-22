@@ -141,7 +141,7 @@ const subkey_len = 32; // Desired length of the derived key in bytes
 
 
               
-            const sessionKeyHex =  localStorage.getItem(`${account}_${recipient}`) ||
+            let sessionKeyHex =  localStorage.getItem(`${account}_${recipient}`) ||
             localStorage.getItem(`${recipient}_${account}`);
 
 
@@ -215,11 +215,14 @@ const subkey_len = 32; // Desired length of the derived key in bytes
                 combinedMessages.sort((a, b) => a.timestamp - b.timestamp);
 
                 for (let msg of combinedMessages) {
-                    const sessionKeyHex1 = localStorage.getItem(`${account}_${recipient}`) ||
+                    let sessionKeyHex1 = localStorage.getItem(`${account}_${recipient}`) ||
                     localStorage.getItem(`${recipient}_${account}`);
         
-        
-                    if(sessionKeyHex1){
+                    if(!sessionKeyHex1){
+                        console.log("Session key not found, deriving a new one to fetch msgs...");
+                sessionKeyHex1 = await deriveEncryptionKey();
+                    }
+                    
                         console.log("SESSION KEY IN FETCH MSG",sessionKeyHex1)
                          // For all messages, decrypt as usual
                        console.log("encrypted msg that is fetched from block", msg.content);
@@ -228,7 +231,7 @@ const subkey_len = 32; // Desired length of the derived key in bytes
                        msg.content = rc4.decrypt(msg.content);
                        console.log("message content decrypted in plaintext", msg.content);
                    
-                    }
+                    
                        
                     
                 }
