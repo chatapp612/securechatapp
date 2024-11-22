@@ -94,29 +94,18 @@ console.log("my pvt key:",privateKeyHex);
 
         console.log("Derived Shared Secret (Hex format):", sodium.to_hex(rawSecret));
 
-        // Set a salt (can be a fixed value or a random value, depending on your application)
-        const salt = sodium.randombytes_buf(32); // Using 32 bytes of random data as salt
         
-        // Set the info string (can be "encryption", "authentication", or any context)
-        const info = sodium.from_string('encryption');
-        console.log("info",typeof(info))
         console.log("raw secret type:",rawSecret);
 
 
 
-
-        console.log("hello");
-        // Use HKDF to derive a key from the rawSecret
-// Step 1: Apply HMAC to the raw secret with salt
-const hmac1 = sodium.crypto_auth(rawSecret, salt); // HMAC with raw secret and salt
-console.log(hmac1);
-// Step 2: Apply HMAC again with the result from the previous step and the info string
-const hmac2 = sodium.crypto_auth(hmac1, info); // Second HMAC
-console.log("hmac2");
-
 // Step 3: Use the first 32 bytes of the resulting HMAC as the derived key
-const derivedKey = hmac2.slice(0, 32); // Get the first 32 bytes
-console.log("Derived Encryption Key (Hex format):", sodium.to_hex(derivedKey));
+const subkey_len = 32; // Desired length of the derived key in bytes
+        const subkey_id = 1; // Use a unique subkey ID, for example, 1 or based on account/recipient
+        const ctx = 'encryption'; // Context string, which can be any relevant string like "encryption"
+
+        const derivedKey = sodium.crypto_kdf_derive_from_key(subkey_len, subkey_id, ctx, rawSecret);
+       console.log("Derived Encryption Key (Hex format):", sodium.to_hex(derivedKey));
         
 
         const key1 = `${account}_${recipient}`;
