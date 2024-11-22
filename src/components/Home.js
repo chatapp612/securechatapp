@@ -60,12 +60,11 @@ const Home = () => {
 
   
     
-    // Method to generate an RSA public/private key pair using the Web Crypto API
 const generateKeys = async () => {
     // Initialize Sodium
     await sodium.ready;
 
-    const keyPair = sodium.crypto_box_keypair();
+    const keyPair = sodium.crypto_kx_keypair();
 console.log("keypairs generated");
     // Convert public and private keys to hexadecimal
     const publicKeyHex = sodium.to_hex(keyPair.publicKey);

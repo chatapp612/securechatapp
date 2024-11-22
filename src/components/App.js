@@ -73,7 +73,7 @@ const App = () => {
   //******************************************************************************************************************************************* */  
   const deriveEncryptionKey = async () => {
     try {
-        console.log("indise derivekeyfunc");
+        console.log("inside derivekeyfunc");
         // Fetch the recipient's public key from the smart contract using the recipient state
         const recipientPublicKeyHex = await contract.methods.getPublicKey(recipient).call({ from: account });
         console.log("public key of recipient:",recipientPublicKeyHex);
@@ -141,7 +141,7 @@ const subkey_len = 32; // Desired length of the derived key in bytes
 
 
               
-            let sessionKeyHex =  localStorage.getItem(`${account}_${recipient}`) ||
+            const sessionKeyHex =  localStorage.getItem(`${account}_${recipient}`) ||
             localStorage.getItem(`${recipient}_${account}`);
 
 
@@ -152,6 +152,7 @@ const subkey_len = 32; // Desired length of the derived key in bytes
                 
             
             }
+            console.log("SESSIONKEY",sessionKeyHex);
                 const rc4 = new RC4(sessionKeyHex);
                 const encryptedmessage = rc4.encrypt(message);
 
@@ -214,18 +215,21 @@ const subkey_len = 32; // Desired length of the derived key in bytes
                 combinedMessages.sort((a, b) => a.timestamp - b.timestamp);
 
                 for (let msg of combinedMessages) {
-                    let sessionKeyHex1 = localStorage.getItem(`${account}_${recipient}`) ||
+                    const sessionKeyHex1 = localStorage.getItem(`${account}_${recipient}`) ||
                     localStorage.getItem(`${recipient}_${account}`);
         
         
-                    
-                        // For all messages, decrypt as usual
+                    if(sessionKeyHex1){
+                        console.log("SESSION KEY IN FETCH MSG",sessionKeyHex1)
+                         // For all messages, decrypt as usual
                        console.log("encrypted msg that is fetched from block", msg.content);
-                        const rc4 = new RC4(sessionKeyHex1);
-                        // Decrypt the content
-                        msg.content = rc4.decrypt(msg.content);
-                        console.log("message content decrpted in plaintext", msg.content);
-                    
+                       const rc4 = new RC4(sessionKeyHex1);
+                       // Decrypt the content
+                       msg.content = rc4.decrypt(msg.content);
+                       console.log("message content decrypted in plaintext", msg.content);
+                   
+                    }
+                       
                     
                 }
 
