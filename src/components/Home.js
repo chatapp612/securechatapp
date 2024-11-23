@@ -4,13 +4,10 @@ import { useWeb3 } from '../contexts/Web3Context.js'; // Import the custom hook 
 import Web3 from 'web3'; // Import Web3 to generate keys
 import { sha256 } from 'js-sha256'; // Hash function to simulate randomness based on the address
 import sodium from "libsodium-wrappers";
-
+import './Home.css'; // Import Home specific styles
 
 const crypto = require('crypto');
-    const fs = require('fs');
-
-
-
+const fs = require('fs');
 
 const Home = () => {
     const [open, setOpen] = useState(false);
@@ -24,6 +21,7 @@ const Home = () => {
     const { web3, contract, account } = useWeb3(); // Access web3, contract, and account from the context
     const navigate = useNavigate();
     const secp256k1 = require("secp256k1");
+
     // Check if user is already registered on page load
     useEffect(() => {
         if (account && contract) {
@@ -31,20 +29,12 @@ const Home = () => {
         }
     }, [account, contract]);
 
-
-
-
-
     const checkIfRegistered = async () => {
         try {
             const existingUsername = await contract.methods.getUsername().call({ from: account });
             if (existingUsername) {
                 setCurrentUsername(existingUsername);
                 setIsRegistered(true);
-                 
-    
-                 
- 
             } else {
                 setIsRegistered(false);
             }
@@ -58,103 +48,74 @@ const Home = () => {
         setOpen(true);
     };
 
-  
+    const generateKeys = async () => {
+        await sodium.ready;
+        const keyPair = sodium.crypto_kx_keypair();
+        console.log("keypairs generated");
+        const publicKeyHex = sodium.to_hex(keyPair.publicKey);
+        const privateKeyHex = sodium.to_hex(keyPair.privateKey);
+
+        localStorage.setItem(`privateKey-${account}`, privateKeyHex);
+        console.log(`Private key for ${account} stored in local storage!`);
+
+        const blob = new Blob([privateKeyHex], { type: "text/plain" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "private_key.txt";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        return publicKeyHex;
+    };
+
+    const handleSignUpSubmit = async () => {
+        if (!username || !password) {
+            setError('Username and Password are required');
+            return;
+        }
+
+        const passwordErrors = getPasswordStrengthError(password);
     
-const generateKeys = async () => {
-    // Initialize Sodium
-    await sodium.ready;
+        if (passwordErrors.length > 0) {
+            setError(passwordErrors.join(' ')); // Join all error messages with space
+            return;
+        }
+        try {
+            const publicKeyHex = await generateKeys();
 
-    const keyPair = sodium.crypto_kx_keypair();
-console.log("keypairs generated");
-    // Convert public and private keys to hexadecimal
-    const publicKeyHex = sodium.to_hex(keyPair.publicKey);
-    const privateKeyHex = sodium.to_hex(keyPair.privateKey);
+            await contract.methods.registerUser(username, publicKeyHex, password).send({ from: account });
+            await contract.methods.updatePublicKey(publicKeyHex).send({ from: account });
+            console.log("public key stored on block");
 
-    console.log("Generated Public Key (Hex format):", publicKeyHex);
-    console.log("Generated Private Key (Hex format):", privateKeyHex);
-    console.log("my public keytype:",typeof(publicKeyHex));
-
-    // Store private key in local storage, using the account address as the key
-    localStorage.setItem(`privateKey-${account}`, privateKeyHex);
-    console.log(`Private key for ${account} stored in local storage!`);
-
-    // Provide a download option for the private key
-    const blob = new Blob([privateKeyHex], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "private_key.txt";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url); // Release the URL object after download
-
-    return publicKeyHex; // Return the public key
-};
-
-const handleSignUpSubmit = async () => {
-    if (!username || !password) { // Validate username and password
-        setError('Username and Password are required');
-        return;
-    }
-    try {
-        // Generate the public and private keys
-        const publicKeyHex = await generateKeys(); // Await for the generated public key in hex format
-        
-
-        // Register the user on the blockchain with the username and public key
-        await contract.methods.registerUser(username, publicKeyHex, password).send({ from: account });
-        // Store the public key on the blockchain if needed
-        await contract.methods.updatePublicKey(publicKeyHex).send({ from: account });
-        console.log("public key stored on block");
-
-        setOpen(false);
-        navigate('/app', { state: { account, username } }); // Navigate to the main app with account and username
-    } catch (error) {
-        console.error("Registration error:", error);
-        setError("Registration failed. Please try again.");
-    }
-};
-
+            setOpen(false);
+            navigate('/app', { state: { account, username } });
+        } catch (error) {
+            console.error("Registration error:", error);
+            setError("Registration failed. Please try again.");
+        }
+    };
 
     const handleLogin = async () => {
-        if (!password) { // Validate password
+        if (!password) {
             setError('Password is required for login');
             return;
         }
         try {
-            console.log("Password entered by user:", password);
-            console.log("before password validate");
-
-            // Hash the password entered by the user
             const hashedPassword = web3.utils.keccak256(password);
-    
-            // Print the hashed password to the console
-            console.log("Hashed password generated by user:", hashedPassword);
-    
-            // Fetch the username associated with the account
+
             const username = await contract.methods.getUsername().call({ from: account });
-            console.log("Username from contract:", username);
-    
-            // Fetch the stored password hash from the smart contract for the logged-in account
+
             const storedHashedPassword = await contract.methods.getPasswordHash(account).call();
-            console.log("Hashed password stored in the contract:", storedHashedPassword);
-    
-            // Validate the password by comparing the hashes
+
             const passwordValid = hashedPassword === storedHashedPassword;
-            console.log("Password valid:", passwordValid); // This will print `true` or `false` based on comparison
-    
+
             if (passwordValid) {
                 console.log("Password is valid. User login successful.");
-
                 setCurrentUsername(username);
                 navigate('/app', { state: { account, username } });
-               
-                console.log("Final")
-               
-    
-                
-    
             } else {
                 setError('Invalid password');
             }
@@ -163,41 +124,82 @@ const handleSignUpSubmit = async () => {
             setError("Login failed. Please try again.");
         }
     };
+
+const getPasswordStrengthError = (password) => {
+    const errors = [];
+    
+    if (password.length < 8) {
+        errors.push("Password must be at least 8 characters long.");
+    }
+    if (!/[A-Z]/.test(password)) {
+        errors.push("Password must contain at least one uppercase letter.");
+    }
+    if (!/[a-z]/.test(password)) {
+        errors.push("Password must contain at least one lowercase letter.");
+    }
+    if (!/\d/.test(password)) {
+        errors.push("Password must contain at least one number.");
+    }
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+        errors.push("Password must contain at least one special character.");
+    }
+    
+    return errors;
+};
+
+
     return (
-        <div>
-            <h1>Welcome to the Chat App</h1>
-            {!isRegistered ? (
-                <>
-                    <h2>Sign Up</h2>
-                    <input
-                        type="text"
-                        placeholder="Username"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                    />
-                    <input
-                        type="password"
-                        placeholder="Password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)} // Bind password input
-                    />
-                    <button onClick={handleSignUpSubmit}>Sign Up</button>
-                </>
-            ) : (
-                <>
-                    <h2>Welcome Back, {currentUsername}!</h2>
-                    <input
-                        type="password"
-                        placeholder="Enter Password to Login"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)} // Bind password input
-                    />
-                    <button onClick={handleLogin}>Login</button>
-                </>
-            )}
-            {error && <p style={{ color: 'red' }}>{error}</p>} {/* Error handling */}
+        <div className="login-container align">
+            <div className="grid">
+                <div className="login-box">
+                    <h1 className="text--center">Welcome to the Chat App</h1>
+                    {!isRegistered ? (
+                        <>
+                            <h2 className="text--center">Sign Up</h2>
+                            <div className="form">
+                                <div className="form__field">
+                                    <input
+                                        className="form__input"
+                                        type="text"
+                                        placeholder="Username"
+                                        value={username}
+                                        onChange={(e) => setUsername(e.target.value)}
+                                    />
+                                </div>
+                                <div className="form__field">
+                                    <input
+                                        className="form__input"
+                                        type="password"
+                                        placeholder="Password"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)} // Bind password input
+                                    />
+                                </div>
+                                <button className="button login" onClick={handleSignUpSubmit}>Sign Up</button>
+                            </div>
+                        </>
+                    ) : (
+                        <>
+                            <h2 className="text--center">Welcome Back, {currentUsername}!</h2>
+                            <div className="form">
+                                <div className="form__field">
+                                    <input
+                                        className="form__input"
+                                        type="password"
+                                        placeholder="Enter Password to Login"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)} // Bind password input
+                                    />
+                                </div>
+                                <button className="button login" onClick={handleLogin}>Login</button>
+                            </div>
+                        </>
+                    )}
+                    {error && <p className="error text--center">{error}</p>} {/* Error handling */}
+                </div>
+            </div>
         </div>
     );
 };
 
-export default Home;
+export default Home; 

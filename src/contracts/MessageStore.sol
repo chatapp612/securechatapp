@@ -18,6 +18,7 @@ contract MessageStore {
 
         mapping(address => mapping(address => string)) private sessionKeys; // Mapping recipient to sender to session key
 
+address[] private allRegisteredUsers; // Array to store registered users' addresses
 
     event ContactAdded(address indexed user, string contactName);
     event ContactRemoved(address indexed user, string contactName);
@@ -36,7 +37,7 @@ contract MessageStore {
         users[msg.sender] = username;
         passwordHashes[msg.sender] = keccak256(abi.encodePacked(password)); // Store hashed password
         publicKeys[msg.sender] = publicKey; // Store public key
-
+ allRegisteredUsers.push(msg.sender);
         // Emit the UserRegistered and PublicKeyUpdated events
         emit UserRegistered(msg.sender, username);
         emit PublicKeyUpdated(msg.sender, publicKey);
@@ -46,6 +47,15 @@ contract MessageStore {
     }
 
 
+function getAllRegisteredUsers() public view returns (string[] memory) {
+    string[] memory usernames = new string[](allRegisteredUsers.length);
+
+    for (uint256 i = 0; i < allRegisteredUsers.length; i++) {
+        usernames[i] = users[allRegisteredUsers[i]]; // Retrieve username for each registered address
+    }
+
+    return usernames;
+}
 
   function storeSessionKey(address recipient, string memory sessionKey) public {
         sessionKeys[msg.sender][recipient] = sessionKey; // Store session key for sender-recipient pair

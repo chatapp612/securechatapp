@@ -1,0 +1,79 @@
+/* Home.css */
+.align {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh; /* Ensure full viewport height to center the content */
+}
+
+.grid {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 320px;
+    width: 90%;
+    display: flex;
+    justify-content: center; /* Center the form horizontally */
+}
+
+.login-box {
+    background-color: #3b4148;
+    padding: 20px;
+    border-radius: 8px;
+    width: 100%; /* Make box take full width within the grid */
+    max-width: 400px; /* Restrict maximum width to avoid it becoming too wide */
+    text-align: center;
+    box-sizing: border-box; /* Include padding in the width calculation */
+}
+
+.text--center {
+    text-align: center;
+}
+
+.form {
+    margin: 1rem 0;
+}
+
+.form__field {
+    margin: 0.5rem 0;
+}
+
+.form__input {
+    width: 100%; /* Ensure input takes up the full width of the box */
+    padding: 0.75rem;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    background-color: #2f353d;
+    color: #fff;
+    font-size: 1rem;
+    margin: 0.5rem 0;
+    box-sizing: border-box; /* Ensure padding doesn't cause the field to overflow */
+}
+
+.form__input:focus {
+    background-color: #434a52;
+    outline: none;
+}
+
+button {
+    background-color: #ea4c88;
+    color: #fff;
+    border: none;
+    padding: 1rem;
+    font-size: 1rem;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 1rem 0;
+    width: 100%; /* Make the button full width within the box */
+}
+
+button:hover {
+    background-color: #d44179;
+}
+
+.error {
+    color: #ff6b6b;
+    font-size: 1rem;
+    margin-top: 1rem;
+}

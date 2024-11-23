@@ -1,85 +1,64 @@
-// AddContactPage.js
 import React, { useState, useEffect } from 'react';
-import './App.css';
+import { useWeb3 } from '../contexts/Web3Context.js';
+import { useNavigate } from 'react-router-dom';
+import './AddContactPage.css';
 
-const AddContactPage = ({ web3, contract }) => {
-    const [showBox, setShowBox] = useState(false);
-    const [name, setName] = useState('');
-    const [recipient, setRecipient] = useState('');
-    const [contacts, setContacts] = useState([]);
+const AddContactPage = () => {
+    const { web3, contract, account } = useWeb3();
+    const [users, setUsers] = useState([]);
+    const [error, setError] = useState(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
-        if (contract) {
-            fetchContacts();
+        if (web3 && contract) {
+            fetchUsers();
         }
-    }, [contract]);
+    }, [web3, contract]);
 
-    const fetchContacts = async () => {
-        const accounts = await web3.eth.getAccounts();
-        const contactsData = await contract.methods.getContacts().call({ from: accounts[0] });
-        setContacts(contactsData);
+    const fetchUsers = async () => {
+        try {
+            if (!web3 || !contract) {
+                setError('Web3 or contract is not initialized');
+                return;
+            }
+
+            const usersData = await contract.methods.getAllRegisteredUsers().call({ from: account });
+
+            if (Array.isArray(usersData) && usersData.length > 0) {
+                setUsers(usersData);
+            } else {
+                setUsers([]);
+            }
+        } catch (error) {
+            console.error('Error fetching users:', error);
+            setError('Failed to fetch users. Please try again later.');
+        }
     };
 
-    const handleSave = async () => {
-        const accounts = await web3.eth.getAccounts();
-        const encryptedAddress = web3.utils.keccak256(recipient); // Example encryption, adjust as needed
-        await contract.methods.addContact(name, encryptedAddress).send({ from: accounts[0] });
-        setName('');
-        setRecipient('');
-        setShowBox(false);
-        fetchContacts(); // Refresh contacts after saving
-    };
-
-    const toggleBox = () => {
-        setShowBox(!showBox);
-    };
-
-    const CenteredBox = ({ onClose }) => {
-        return (
-            <div className="overlay">
-                <div className="box">
-                    <h2>Add Contact</h2>
-                    <div className="add-contact-input-area">
-                        <input
-                            type="text"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            placeholder="Enter Name"
-                            className="name-input"
-                        />
-                    </div>
-                    <div className="add-contact-input-area">
-                        <input
-                            type="text"
-                            value={recipient}
-                            onChange={(e) => setRecipient(e.target.value)}
-                            placeholder="Enter Recipient Ethereum Address"
-                            className="add-contact-recipient-input"
-                        />
-                    </div>
-                    <div className="button-group">
-                        <button onClick={handleSave} className="save-button">Save</button>
-                        <button onClick={onClose} className="cancel-button">Cancel</button>
-                    </div>
-                </div>
-            </div>
-        );
+    const handleUserClick = (user) => {
+        navigate('/app', { state: { recipient: user } });  // Passing the recipient address to App component
     };
 
     return (
         <div className="add-contact-page">
             <div className="chat-header">
-                <h2>Contact List</h2>
-                <button onClick={toggleBox} className="addcontact-button">Add New Contact</button>
+                <h2>All Registered Users</h2>
             </div>
-            {showBox && <CenteredBox onClose={toggleBox} />}
-            <div className="contact-list">
-                {contacts.map((contact, index) => (
-                    <div key={index} className="contact-item">
-                        {contact.name} - {web3.utils.toHex(contact.encryptedAddress)} {/* Adjust as necessary */}
-                    </div>
-                ))}
-            </div>
+            {error ? (
+                <div className="error-message">{error}</div>
+            ) : (
+                <ul className="user-list">
+                    {users.length > 0 ? (
+                        users.map((user, index) => (
+                            <li key={index} className="user-item">
+                                <a href="/app" onClick={() => handleUserClick(user)}>{user}</a>
+                            </li>
+                        ))
+                    ) : (
+                        <div>No users registered yet.</div>
+                    )}
+                </ul>
+            )}
         </div>
     );
 };

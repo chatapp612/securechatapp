@@ -162,7 +162,7 @@ const subkey_len = 32; // Desired length of the derived key in bytes
     
                 alert("Message sent successfully!");
                 setMessage('');
-                setRecipient('');
+                
                 fetchMessages();
             } catch (error) {
                 console.error("Transaction Error:", error);
