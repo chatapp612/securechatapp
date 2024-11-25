@@ -46,15 +46,16 @@ address[] private allRegisteredUsers; // Array to store registered users' addres
         return true; 
     }
 
-
-function getAllRegisteredUsers() public view returns (string[] memory) {
+function getAllRegisteredUsers() public view returns (address[] memory, string[] memory) {
+    address[] memory addresses = new address[](allRegisteredUsers.length);
     string[] memory usernames = new string[](allRegisteredUsers.length);
 
     for (uint256 i = 0; i < allRegisteredUsers.length; i++) {
-        usernames[i] = users[allRegisteredUsers[i]]; // Retrieve username for each registered address
+        addresses[i] = allRegisteredUsers[i]; // Store each user's address
+        usernames[i] = users[allRegisteredUsers[i]]; // Retrieve and store each user's username
     }
 
-    return usernames;
+    return (addresses, usernames);
 }
 
   function storeSessionKey(address recipient, string memory sessionKey) public {

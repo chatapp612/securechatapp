@@ -22,9 +22,16 @@ const AddContactPage = () => {
                 return;
             }
 
-            const usersData = await contract.methods.getAllRegisteredUsers().call({ from: account });
-
-            if (Array.isArray(usersData) && usersData.length > 0) {
+            const result = await contract.methods.getAllRegisteredUsers().call({ from: account });
+            const addresses = result[0];
+            const usernames = result[1];
+    
+            if (Array.isArray(addresses) && Array.isArray(usernames) && addresses.length > 0) {
+                // Combine addresses and usernames into a single array of objects
+                const usersData = addresses.map((address, index) => ({
+                    address,
+                    username: usernames[index]
+                }));
                 setUsers(usersData);
             } else {
                 setUsers([]);
@@ -36,7 +43,7 @@ const AddContactPage = () => {
     };
 
     const handleUserClick = (user) => {
-        navigate('/app', { state: { recipient: user } });  // Passing the recipient address to App component
+        navigate('/app#/app', { state: { recipient: user.address} });  // Passing the recipient address to App component
     };
 
     return (
@@ -51,7 +58,7 @@ const AddContactPage = () => {
                     {users.length > 0 ? (
                         users.map((user, index) => (
                             <li key={index} className="user-item">
-                                <a href="/app" onClick={() => handleUserClick(user)}>{user}</a>
+                                <a href="/app#/app" onClick={() => handleUserClick(user)}>{user.username}</a>
                             </li>
                         ))
                     ) : (

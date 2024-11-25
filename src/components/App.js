@@ -63,10 +63,15 @@ const App = () => {
     const username = (location.state && location.state.username) ? location.state.username : 'Guest';
 
     useEffect(() => {
+        // Set recipient from navigation state when the component loads
+        if (location.state && location.state.recipient) {
+            setRecipient(location.state.recipient);
+            setSelectedSender(location.state.recipient);
+        }
         if (contract && account) {
             fetchMessages();
         }
-    }, [contract, account]);
+    }, [contract, account,location.state && location.state.recipient]);
 
     
     
