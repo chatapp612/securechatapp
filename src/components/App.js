@@ -3,9 +3,7 @@ import './App.css';
 import { useNavigate } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
 import { useWeb3 } from '../contexts/Web3Context.js';
-import crypto from 'crypto';
 import sodium from "libsodium-wrappers";
-
 
 class RC4 {
     constructor(key) {
@@ -58,23 +56,23 @@ const App = () => {
     const [selectedSender, setSelectedSender] = useState(null);
     const location = useLocation();
     const navigate = useNavigate();
-
     const { contract, account, setAccount } = useWeb3();
     const username = (location.state && location.state.username) ? location.state.username : 'Guest';
 
     useEffect(() => {
-        // Set recipient from navigation state when the component loads
         if (location.state && location.state.recipient) {
             setSelectedSender(location.state.recipient);
         }
         if (contract && account) {
             fetchMessages();
+            if (location.state && location.state.recipient) {
+                fetchMessagesForSender(location.state.recipient);
+            }
         }
     }, [contract, account, location.state && location.state.recipient]);
 
     const deriveEncryptionKey = async () => {
         try {
-            // Fetch the recipient's public key from the smart contract using the selectedSender state
             const recipientPublicKeyHex = await contract.methods.getPublicKey(selectedSender).call({ from: account });
             const privateKeyHex = localStorage.getItem(`privateKey-${account}`);
             if (!privateKeyHex) {
@@ -85,18 +83,8 @@ const App = () => {
             const privateKey = sodium.from_hex(privateKeyHex);
             const rawSecret = sodium.crypto_scalarmult(privateKey, recipientPublicKey);
 
-            const subkey_len = 32;
-            const subkey_id = 1;
-            const ctx = 'encryption';
-
-            const derivedKey = sodium.crypto_kdf_derive_from_key(subkey_len, subkey_id, ctx, rawSecret);
-
-            const key1 = `${account}_${selectedSender}`;
-            const key2 = `${selectedSender}_${account}`;
-
-            localStorage.setItem(key1, sodium.to_hex(derivedKey));
-            localStorage.setItem(key2, sodium.to_hex(derivedKey));
-
+            const derivedKey = sodium.crypto_kdf_derive_from_key(32, 1, 'encryption', rawSecret);
+            localStorage.setItem(`${account}_${selectedSender}`, sodium.to_hex(derivedKey));
             return sodium.to_hex(derivedKey);
         } catch (error) {
             console.error("Error deriving encryption key:", error);
@@ -108,7 +96,6 @@ const App = () => {
             alert("Both recipient and message fields are required.");
             return;
         }
-
         if (contract) {
             try {
                 let sessionKeyHex = localStorage.getItem(`${account}_${selectedSender}`) ||
@@ -140,9 +127,9 @@ const App = () => {
     const fetchMessages = async () => {
         if (contract) {
             try {
-                const allMessages = await contract.methods.fetchMessagesForLoggedInAccount().call({ from: account });
-                const uniqueSenders = [...new Set(allMessages.map(msg => msg.sender))];
-                // Fetch usernames for each unique sender
+                const allMessages = await contract.methods.fetchAllMessagesForLoggedInAccount().call({ from: account });
+                const uniqueSenders = [...new Set(allMessages.map(msg => msg.sender === account ? msg.recipient : msg.sender))];
+
                 const sendersWithNames = await Promise.all(
                     uniqueSenders.map(async (sender) => ({
                         address: sender,
@@ -163,7 +150,7 @@ const App = () => {
         if (contract) {
             try {
                 const username = await contract.methods.getUsernameByAddress(address).call();
-                return username || address; // Return address if username is not found
+                return username || address;
             } catch (error) {
                 console.error("Error fetching the name:", error);
                 return address;
@@ -172,29 +159,24 @@ const App = () => {
         return address;
     };
 
-
     const fetchMessagesForSender = async (sender) => {
         if (contract) {
             try {
-                const receivedMessages = await contract.methods.fetchMessagesForSender(sender).call({ from: account }) || [];;
-                const sentMessages = await contract.methods.fetchMessagesForSender(account).call({ from: sender }) || [];;
+                const allMessages = await contract.methods.fetchAllMessagesForLoggedInAccount().call({ from: account });
+                const messagesWithSender = allMessages.filter(
+                    msg => (msg.sender === sender && msg.recipient === account) || 
+                           (msg.sender === account && msg.recipient === sender)
+                );
 
-                const formattedReceivedMessages = receivedMessages.map(msg => ({
+                const formattedMessages = messagesWithSender.map(msg => ({
                     ...msg,
                     timestamp: msg.timestamp * 1000,
-                    direction: 'received',
+                    direction: msg.sender === account ? 'sent' : 'received',
                 }));
 
-                const formattedSentMessages = sentMessages.map(msg => ({
-                    ...msg,
-                    timestamp: msg.timestamp * 1000,
-                    direction: 'sent',
-                }));
+                formattedMessages.sort((a, b) => a.timestamp - b.timestamp);
 
-                const combinedMessages = [...formattedReceivedMessages, ...formattedSentMessages];
-                combinedMessages.sort((a, b) => a.timestamp - b.timestamp);
-
-                for (let msg of combinedMessages) {
+                for (let msg of formattedMessages) {
                     let sessionKeyHex = localStorage.getItem(`${account}_${sender}`) ||
                         localStorage.getItem(`${sender}_${account}`);
 
@@ -206,7 +188,7 @@ const App = () => {
                     msg.content = rc4.decrypt(msg.content);
                 }
 
-                setAllMessages(combinedMessages);
+                setAllMessages(formattedMessages);
                 setSelectedSender(sender);
             } catch (error) {
                 console.error("Error fetching messages for sender:", error);
@@ -222,9 +204,10 @@ const App = () => {
     };
 
     const handleLogout = () => {
-        setAccount(null);  // Clear the connected account in the Web3 context
-        navigate('/'); // Redirect to the login page
+        setAccount(null);
+        window.location.href = '/';
     };
+
     return (
         <div className="app">
             <div className="sidebar">
@@ -243,7 +226,6 @@ const App = () => {
                         <li>No contacts available.</li>
                     )}
                 </ul>
-
             </div>
 
             <div className="chat-container">
@@ -252,11 +234,12 @@ const App = () => {
                     <button onClick={goToAddContactPage} className="addcontact-button">Add New Contact</button>
                     <button onClick={handleLogout} className="logout-button">Logout</button>
                 </div>
+
                 <div className="chat-window">
                     <ul className="messages">
                         {allMessages.length > 0 ? (
                             allMessages.map((msg, index) => (
-                                <li key={index} className={`message ${msg.direction}`}>
+                                <li key={index} className={msg.direction}>
                                     <p>{msg.content}</p>
                                     <span className="timestamp">{new Date(msg.timestamp).toLocaleString()}</span>
                                 </li>
@@ -272,9 +255,9 @@ const App = () => {
                         type="text"
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
-                        placeholder="Enter your message"
+                        placeholder="Type a message..."
                     />
-                    <button onClick={sendMessage}>Send Message</button>
+                    <button onClick={sendMessage}>Send</button>
                 </div>
             </div>
         </div>
