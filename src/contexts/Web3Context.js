@@ -43,8 +43,14 @@ export const Web3Provider = ({ children }) => {
         initWeb3();
     }, []);
 
+    // Add a logout function to clear the account
+    const logout = () => {
+        setAccount(null);  // Clear the account to "log out" the user
+      
+    };
+
     return (
-        <Web3Context.Provider value={{ web3, contract, account }}>
+        <Web3Context.Provider value={{ web3, contract, account, setAccount, logout }}>
             {children}
         </Web3Context.Provider>
     );

@@ -6,6 +6,7 @@ import { useWeb3 } from '../contexts/Web3Context.js';
 import crypto from 'crypto';
 import sodium from "libsodium-wrappers";
 
+
 class RC4 {
     constructor(key) {
         this.key = key;
@@ -51,7 +52,6 @@ class RC4 {
 }
 
 const App = () => {
-    const [recipient, setRecipient] = useState('');
     const [message, setMessage] = useState('');
     const [allMessages, setAllMessages] = useState([]);
     const [senders, setSenders] = useState([]);
@@ -59,116 +59,75 @@ const App = () => {
     const location = useLocation();
     const navigate = useNavigate();
 
-    const { contract, account } = useWeb3();
+    const { contract, account, setAccount } = useWeb3();
     const username = (location.state && location.state.username) ? location.state.username : 'Guest';
 
     useEffect(() => {
         // Set recipient from navigation state when the component loads
         if (location.state && location.state.recipient) {
-            setRecipient(location.state.recipient);
             setSelectedSender(location.state.recipient);
         }
         if (contract && account) {
             fetchMessages();
         }
-    }, [contract, account,location.state && location.state.recipient]);
+    }, [contract, account, location.state && location.state.recipient]);
 
-    
-    
-  //******************************************************************************************************************************************* */  
-  const deriveEncryptionKey = async () => {
-    try {
-        console.log("inside derivekeyfunc");
-        // Fetch the recipient's public key from the smart contract using the recipient state
-        const recipientPublicKeyHex = await contract.methods.getPublicKey(recipient).call({ from: account });
-        console.log("public key of recipient:",recipientPublicKeyHex);
-        // Retrieve your private key from local storage using your account address
-        const privateKeyHex = localStorage.getItem(`privateKey-${account}`);
-console.log("my pvt key:",privateKeyHex);
-        if (!privateKeyHex) {
-            throw new Error("Private key not found in localStorage.");
+    const deriveEncryptionKey = async () => {
+        try {
+            // Fetch the recipient's public key from the smart contract using the selectedSender state
+            const recipientPublicKeyHex = await contract.methods.getPublicKey(selectedSender).call({ from: account });
+            const privateKeyHex = localStorage.getItem(`privateKey-${account}`);
+            if (!privateKeyHex) {
+                throw new Error("Private key not found in localStorage.");
+            }
+
+            const recipientPublicKey = sodium.from_hex(recipientPublicKeyHex);
+            const privateKey = sodium.from_hex(privateKeyHex);
+            const rawSecret = sodium.crypto_scalarmult(privateKey, recipientPublicKey);
+
+            const subkey_len = 32;
+            const subkey_id = 1;
+            const ctx = 'encryption';
+
+            const derivedKey = sodium.crypto_kdf_derive_from_key(subkey_len, subkey_id, ctx, rawSecret);
+
+            const key1 = `${account}_${selectedSender}`;
+            const key2 = `${selectedSender}_${account}`;
+
+            localStorage.setItem(key1, sodium.to_hex(derivedKey));
+            localStorage.setItem(key2, sodium.to_hex(derivedKey));
+
+            return sodium.to_hex(derivedKey);
+        } catch (error) {
+            console.error("Error deriving encryption key:", error);
         }
-
-        // Convert hex keys to Uint8Array
-        const recipientPublicKey = sodium.from_hex(recipientPublicKeyHex);
-        
-        const privateKey = sodium.from_hex(privateKeyHex);
-        console.log("converted pvt key from hex to uint8",privateKey);
-        // Calculate the shared secret using your private key and the recipient's public key
-        const rawSecret = sodium.crypto_scalarmult(privateKey, recipientPublicKey);
-
-        console.log("Derived Shared Secret (Hex format):", sodium.to_hex(rawSecret));
-
-        
-        console.log("raw secret type:",rawSecret);
-
-
-
-// Step 3: Use the first 32 bytes of the resulting HMAC as the derived key
-const subkey_len = 32; // Desired length of the derived key in bytes
-        const subkey_id = 1; // Use a unique subkey ID, for example, 1 or based on account/recipient
-        const ctx = 'encryption'; // Context string, which can be any relevant string like "encryption"
-
-        const derivedKey = sodium.crypto_kdf_derive_from_key(subkey_len, subkey_id, ctx, rawSecret);
-       console.log("Derived Encryption Key (Hex format):", sodium.to_hex(derivedKey));
-        
-
-        const key1 = `${account}_${recipient}`;
-        const key2 = `${recipient}_${account}`;
-    
-        // Store the derived key in local storage for both combinations
-        localStorage.setItem(key1, sodium.to_hex(derivedKey));
-        localStorage.setItem(key2, sodium.to_hex(derivedKey));
-    
-        console.log(`Derived encryption key stored for ${key1} and ${key2}`);
-
-
-        return sodium.to_hex(derivedKey); // Return the derived encryption key
-    } catch (error) {
-        console.error("Error deriving encryption key:", error);
-    }
-};
-
-
-  
-
-  //******************************************************************************************************************************************* */  
+    };
 
     const sendMessage = async () => {
-        if (!recipient || !message) {
+        if (!selectedSender || !message) {
             alert("Both recipient and message fields are required.");
             return;
         }
-    
+
         if (contract) {
             try {
-                console.log("in send msg");
+                let sessionKeyHex = localStorage.getItem(`${account}_${selectedSender}`) ||
+                    localStorage.getItem(`${selectedSender}_${account}`);
 
+                if (!sessionKeyHex) {
+                    sessionKeyHex = await deriveEncryptionKey();
+                }
 
-              
-            let sessionKeyHex =  localStorage.getItem(`${account}_${recipient}`) ||
-            localStorage.getItem(`${recipient}_${account}`);
-
-
-
-            if (!sessionKeyHex) {
-                console.log("Session key not found, deriving a new one...");
-                sessionKeyHex = await deriveEncryptionKey();
-                
-            
-            }
-            console.log("SESSIONKEY",sessionKeyHex);
                 const rc4 = new RC4(sessionKeyHex);
-                const encryptedmessage = rc4.encrypt(message);
+                const encryptedMessage = rc4.encrypt(message);
 
-                
-                const gasEstimate = await contract.methods.sendMessage(recipient, encryptedmessage).estimateGas({ from: account });
-                await contract.methods.sendMessage(recipient, encryptedmessage).send({ from: account, gas: gasEstimate + 100000 });
-    
+                const gasEstimate = await contract.methods.sendMessage(selectedSender, encryptedMessage).estimateGas({ from: account });
+                await contract.methods.sendMessage(selectedSender, encryptedMessage).send({ from: account, gas: gasEstimate + 100000 });
+
                 alert("Message sent successfully!");
                 setMessage('');
-                
-                fetchMessages();
+
+                fetchMessagesForSender(selectedSender);
             } catch (error) {
                 console.error("Transaction Error:", error);
                 alert("Transaction failed: " + error.message);
@@ -177,18 +136,20 @@ const subkey_len = 32; // Desired length of the derived key in bytes
             alert("Contract not initialized.");
         }
     };
-    
 
-
-
-
-    
     const fetchMessages = async () => {
         if (contract) {
             try {
-                const receivedMessages = await contract.methods.fetchMessagesForLoggedInAccount().call({ from: account });
-                const uniqueSenders = [...new Set(receivedMessages.map(msg => msg.sender))];
-                setSenders(uniqueSenders);
+                const allMessages = await contract.methods.fetchMessagesForLoggedInAccount().call({ from: account });
+                const uniqueSenders = [...new Set(allMessages.map(msg => msg.sender))];
+                // Fetch usernames for each unique sender
+                const sendersWithNames = await Promise.all(
+                    uniqueSenders.map(async (sender) => ({
+                        address: sender,
+                        name: await getUserName(sender),
+                    }))
+                );
+                setSenders(sendersWithNames);
             } catch (error) {
                 console.error("Error fetching messages:", error);
                 alert("Error fetching messages: " + error.message);
@@ -198,11 +159,25 @@ const subkey_len = 32; // Desired length of the derived key in bytes
         }
     };
 
+    const getUserName = async (address) => {
+        if (contract) {
+            try {
+                const username = await contract.methods.getUsernameByAddress(address).call();
+                return username || address; // Return address if username is not found
+            } catch (error) {
+                console.error("Error fetching the name:", error);
+                return address;
+            }
+        }
+        return address;
+    };
+
+
     const fetchMessagesForSender = async (sender) => {
         if (contract) {
             try {
-                const receivedMessages = await contract.methods.fetchMessagesForSender(sender).call({ from: account });
-                const sentMessages = await contract.methods.fetchMessagesForSender(account).call({ from: sender });
+                const receivedMessages = await contract.methods.fetchMessagesForSender(sender).call({ from: account }) || [];;
+                const sentMessages = await contract.methods.fetchMessagesForSender(account).call({ from: sender }) || [];;
 
                 const formattedReceivedMessages = receivedMessages.map(msg => ({
                     ...msg,
@@ -220,25 +195,15 @@ const subkey_len = 32; // Desired length of the derived key in bytes
                 combinedMessages.sort((a, b) => a.timestamp - b.timestamp);
 
                 for (let msg of combinedMessages) {
-                    let sessionKeyHex1 = localStorage.getItem(`${account}_${recipient}`) ||
-                    localStorage.getItem(`${recipient}_${account}`);
-        
-                    if(!sessionKeyHex1){
-                        console.log("Session key not found, deriving a new one to fetch msgs...");
-                sessionKeyHex1 = await deriveEncryptionKey();
+                    let sessionKeyHex = localStorage.getItem(`${account}_${sender}`) ||
+                        localStorage.getItem(`${sender}_${account}`);
+
+                    if (!sessionKeyHex) {
+                        sessionKeyHex = await deriveEncryptionKey();
                     }
-                    
-                        console.log("SESSION KEY IN FETCH MSG",sessionKeyHex1)
-                         // For all messages, decrypt as usual
-                       console.log("encrypted msg that is fetched from block", msg.content);
-                       const rc4 = new RC4(sessionKeyHex1);
-                       // Decrypt the content
-                       msg.content = rc4.decrypt(msg.content);
-                       console.log("message content decrypted in plaintext", msg.content);
-                   
-                    
-                       
-                    
+
+                    const rc4 = new RC4(sessionKeyHex);
+                    msg.content = rc4.decrypt(msg.content);
                 }
 
                 setAllMessages(combinedMessages);
@@ -252,37 +217,40 @@ const subkey_len = 32; // Desired length of the derived key in bytes
         }
     };
 
-
-
-
     const goToAddContactPage = () => {
         navigate('/add-contact');
     };
 
+    const handleLogout = () => {
+        setAccount(null);  // Clear the connected account in the Web3 context
+        navigate('/'); // Redirect to the login page
+    };
     return (
         <div className="app">
             <div className="sidebar">
                 <h3>Contacts</h3>
-                <h2>Welcome, {username}</h2>
+                <h2>{username}</h2>
                 <p>Your Ethereum address: {account}</p>
-                <button onClick={fetchMessages} className="fetch-button">Show Contacts</button>
+
                 <ul className="senders-list">
                     {senders.length > 0 ? (
-                        senders.map((sender, index) => (
-                            <li key={index} onClick={() => fetchMessagesForSender(sender)}>
-                                <span>{sender}</span>
+                        senders.map((senderObj, index) => (
+                            <li key={index} onClick={() => fetchMessagesForSender(senderObj.address)}>
+                                <span>{senderObj.name}</span>
                             </li>
                         ))
                     ) : (
                         <li>No contacts available.</li>
                     )}
                 </ul>
+
             </div>
 
             <div className="chat-container">
                 <div className="chat-header">
                     <h2>Messages for: {selectedSender || "Select a Sender"}</h2>
                     <button onClick={goToAddContactPage} className="addcontact-button">Add New Contact</button>
+                    <button onClick={handleLogout} className="logout-button">Logout</button>
                 </div>
                 <div className="chat-window">
                     <ul className="messages">
@@ -302,17 +270,11 @@ const subkey_len = 32; // Desired length of the derived key in bytes
                 <div className="message-form">
                     <input
                         type="text"
-                        value={recipient}
-                        onChange={(e) => setRecipient(e.target.value)}
-                        placeholder="Recipient address"
-                    />
-                    <input
-                        type="text"
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
                         placeholder="Enter your message"
                     />
-                    <button onClick={sendMessage}>Send</button>
+                    <button onClick={sendMessage}>Send Message</button>
                 </div>
             </div>
         </div>

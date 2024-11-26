@@ -31,7 +31,7 @@ const AddContactPage = () => {
                 const usersData = addresses.map((address, index) => ({
                     address,
                     username: usernames[index]
-                }));
+                })).filter(user => user.address !== account);
                 setUsers(usersData);
             } else {
                 setUsers([]);

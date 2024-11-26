@@ -27,6 +27,7 @@ const Home = () => {
         if (account && contract) {
             checkIfRegistered();
         }
+       
     }, [account, contract]);
 
     const checkIfRegistered = async () => {
@@ -74,6 +75,10 @@ const Home = () => {
     const handleSignUpSubmit = async () => {
         if (!username || !password) {
             setError('Username and Password are required');
+            return;
+        }
+        if (username.length < 3 || username.length > 100) {
+            setError('Username must be between 3 and 100 characters');
             return;
         }
 
@@ -167,6 +172,7 @@ const getPasswordStrengthError = (password) => {
                                     />
                                 </div>
                                 <div className="form__field">
+                                    
                                     <input
                                         className="form__input"
                                         type="password"
