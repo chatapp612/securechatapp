@@ -57,7 +57,7 @@ const App = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const { contract, account, setAccount } = useWeb3();
-    const username = (location.state && location.state.username) ? location.state.username : 'Guest';
+    const username = (location.state && location.state.username) ? location.state.username : '';
 
     useEffect(() => {
         if (location.state && location.state.recipient) {
@@ -100,20 +100,20 @@ const App = () => {
             try {
                 let sessionKeyHex = localStorage.getItem(`${account}_${selectedSender}`) ||
                     localStorage.getItem(`${selectedSender}_${account}`);
-
+    
                 if (!sessionKeyHex) {
                     sessionKeyHex = await deriveEncryptionKey();
                 }
-
+    
                 const rc4 = new RC4(sessionKeyHex);
                 const encryptedMessage = rc4.encrypt(message);
-
+    
                 const gasEstimate = await contract.methods.sendMessage(selectedSender, encryptedMessage).estimateGas({ from: account });
                 await contract.methods.sendMessage(selectedSender, encryptedMessage).send({ from: account, gas: gasEstimate + 100000 });
-
+    
                 alert("Message sent successfully!");
                 setMessage('');
-
+    
                 fetchMessagesForSender(selectedSender);
             } catch (error) {
                 console.error("Transaction Error:", error);
@@ -167,27 +167,27 @@ const App = () => {
                     msg => (msg.sender === sender && msg.recipient === account) || 
                            (msg.sender === account && msg.recipient === sender)
                 );
-
+    
                 const formattedMessages = messagesWithSender.map(msg => ({
                     ...msg,
                     timestamp: msg.timestamp * 1000,
                     direction: msg.sender === account ? 'sent' : 'received',
                 }));
-
+    
                 formattedMessages.sort((a, b) => a.timestamp - b.timestamp);
-
+    
                 for (let msg of formattedMessages) {
                     let sessionKeyHex = localStorage.getItem(`${account}_${sender}`) ||
                         localStorage.getItem(`${sender}_${account}`);
-
+    
                     if (!sessionKeyHex) {
                         sessionKeyHex = await deriveEncryptionKey();
                     }
-
+    
                     const rc4 = new RC4(sessionKeyHex);
                     msg.content = rc4.decrypt(msg.content);
                 }
-
+    
                 setAllMessages(formattedMessages);
                 setSelectedSender(sender);
             } catch (error) {
@@ -211,7 +211,7 @@ const App = () => {
     return (
         <div className="app">
             <div className="sidebar">
-                <h3>Contacts</h3>
+            
                 <h2>{username}</h2>
                 <p>Your Ethereum address: {account}</p>
 
@@ -230,34 +230,36 @@ const App = () => {
 
             <div className="chat-container">
                 <div className="chat-header">
-                    <h2>Messages for: {selectedSender || "Select a Sender"}</h2>
-                    <button onClick={goToAddContactPage} className="addcontact-button">Add New Contact</button>
+                    <h2>{selectedSender}</h2>
+                    <button onClick={goToAddContactPage} className="addcontact-button">All Contacts</button>
                     <button onClick={handleLogout} className="logout-button">Logout</button>
                 </div>
 
                 <div className="chat-window">
-                    <ul className="messages">
-                        {allMessages.length > 0 ? (
-                            allMessages.map((msg, index) => (
-                                <li key={index} className={msg.direction}>
-                                    <p>{msg.content}</p>
-                                    <span className="timestamp">{new Date(msg.timestamp).toLocaleString()}</span>
-                                </li>
-                            ))
-                        ) : (
-                            <li>No messages to display</li>
-                        )}
-                    </ul>
-                </div>
+    <ul className="messages">
+        {allMessages.length > 0 ? (
+            allMessages.map((msg, index) => (
+                <li key={index} className={msg.direction}>
+                   { console.log(msg.direction)}
+                    <p>{msg.content}</p>
+                    <span className="timestamp">{new Date(msg.timestamp).toLocaleString()}</span>
+                </li>
+            ))
+        ) : (
+            <li>No messages to display</li>
+        )}
+    </ul>
+</div>
 
                 <div className="message-form">
                     <input
                         type="text"
                         value={message}
+                        className="message-input"
                         onChange={(e) => setMessage(e.target.value)}
                         placeholder="Type a message..."
                     />
-                    <button onClick={sendMessage}>Send</button>
+                    <button onClick={sendMessage} className="send-button">Send</button>
                 </div>
             </div>
         </div>

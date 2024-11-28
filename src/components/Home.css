@@ -17,7 +17,7 @@
 }
 
 .login-box {
-    background-color: #3b4148;
+    background-color: #afaebbc4;
     padding: 20px;
     border-radius: 8px;
     width: 100%; /* Make box take full width within the grid */
@@ -43,20 +43,20 @@
     padding: 0.75rem;
     border-radius: 5px;
     border: 1px solid #ccc;
-    background-color: #2f353d;
-    color: #fff;
+    background-color: #ffffff;
+    color: #000000;
     font-size: 1rem;
     margin: 0.5rem 0;
     box-sizing: border-box; /* Ensure padding doesn't cause the field to overflow */
 }
 
 .form__input:focus {
-    background-color: #434a52;
+    background-color: #fcfeffe7;
     outline: none;
 }
 
 button {
-    background-color: #ea4c88;
+    background-color: #222261d7;
     color: #fff;
     border: none;
     padding: 1rem;

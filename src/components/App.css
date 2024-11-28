@@ -76,6 +76,31 @@
     padding: 10px;
     background-color: #f1f1f1;
 }
+.chat-header button {
+    padding: 8px 15px; /* Smaller padding for compact buttons */
+    background-color: #222261d7; /* Blue color */
+    color: #fff;
+    border: none;
+    border-radius: 25px;
+    font-size: 14px; /* Smaller font size for buttons */
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth animations */
+}
+
+.chat-header button:hover {
+    background-color: #d44179; /* Darker blue on hover */
+    transform: scale(1.05); /* Slightly enlarge on hover */
+}
+
+.chat-header button:active {
+    background-color: #15153c; /* Even darker blue on click */
+    transform: scale(0.95); /* Slight shrinking on click */
+}
+
+/* Aligning the "Add New Contact" and "Logout" buttons to the right */
+.chat-header button:last-child {
+    margin-left: 10px; /* Adds space between the buttons */
+}
 
 .chat-window {
     flex: 1; /* Allow it to grow and fill space */
@@ -102,6 +127,11 @@
     transition: box-shadow 0.3s; /* Smooth transition for shadows */
 }
 
+
+.message.sent:hover {
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.3),
+                0px 2px 20px rgba(0, 0, 0, 0.15);
+}
 .message.sent {
     background: #afaebbc4;
     text-align: right;
@@ -109,11 +139,7 @@
     clear: both;
     animation: slideInRight 0.4s ease-out;
     border-radius: 20px;
-}
-
-.message.sent:hover {
-    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.3),
-                0px 2px 20px rgba(0, 0, 0, 0.15);
+    margin-right: 10px; /* Add some space to the right */
 }
 
 .message.received {
@@ -122,9 +148,9 @@
     float: left;
     clear: both;
     color: white;
-    color: white;
     animation: slideInLeft 0.4s ease-out;
     border-radius: 20px;
+    margin-left: 10px; /* Add some space to the left */
 }
 
 .message.received:hover {
@@ -153,14 +179,51 @@
     border-radius: 0 0 5px 5px;
 }
 
-.recipient-input,
-.message-input {
-    flex: 1;
+.message-form {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    background-color: #f8f9fa; /* Light background for the message input area */
+    border-top: 1px solid #ccc; /* Subtle border on top */
+}
+
+.message-form input[type="text"] {
+    flex: 1; /* Take up available space */
     padding: 10px;
     border: 1px solid #ccc;
-    background-color: #fff;
     border-radius: 25px;
-    margin-bottom: 10px; /* Add margin between inputs */
+    font-size: 16px;
+    outline: none; /* Remove default outline on focus */
+    background-color: #fff;
+    margin-right: 10px; /* Space between input and button */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Add slight shadow */
+    transition: border-color 0.3s ease; /* Smooth border transition on focus */
+}
+
+.message-form input[type="text"]:focus {
+    border-color: #222261d7; /* Change border color on focus */
+}
+
+.message-form button {
+    padding: 10px 20px;
+    background-color: #222261d7; /* Blue button */
+    color: #fff;
+    border: none;
+    border-radius: 25px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth animations */
+}
+
+.message-form button:hover {
+    background-color: #d44179; /* Darker blue on hover */
+    transform: scale(1.05); /* Slightly enlarge on hover */
+}
+
+.message-form button:active {
+    background-color: #222261d7; /* Even darker blue on click */
+    transform: scale(0.95); /* Slightly shrink on click */
 }
 
 .send-button, .addcontact-button ,.cancel-button ,.save-button ,.handlelogin-button,.handlesignup-button{
@@ -190,7 +253,6 @@
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
     font-family: 'Helvetica Neue', 'Arial', sans-serif;
 }
-
 
 /* Animations */
 @keyframes slideInRight {
@@ -243,5 +305,22 @@
 
     .send-button {
         width: auto;
+    }
+
+    .messages {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .message {
+        max-width: 75%; /* Increase the width for larger screens */
+    }
+
+    .message.sent {
+        align-self: flex-end; /* Align sent messages to the right on desktop */
+    }
+
+    .message.received {
+        align-self: flex-start; /* Align received messages to the left on desktop */
     }
 }
