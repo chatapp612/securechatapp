@@ -15,8 +15,8 @@ module.exports = {
           phrase: "liar save element move uncover census wife picture spread dog art tornado" // Replace with your actual mnemonic
         },
         providerOrUrl: "https://volta-rpc.energyweb.org",
-        pollingInterval: 22000, 
-        timeoutBlocks: 220,
+        pollingInterval: 28000, 
+        timeoutBlocks: 210,
       }),
       network_id: 73799, // holesky's network ID
       gas: 6000000, // Adjust gas limit as needed

@@ -74,7 +74,7 @@
   "sourceMap": "34:480:2:-;;;123:50;8:9:-1;5:2;;;30:1;27;20:12;5:2;123:50:2;158:10;150:5;;:18;;;;;;;;;;;;;;;;;;34:480;;;;;;",
   "deployedSourceMap": "34:480:2:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;34:480:2;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;347:165;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;347:165:2;;;;;;;;;;;;;;;;;;;:::i;:::-;;82:36;;;:::i;:::-;;;;;;;;;;;;;;;;;;;58:20;;;:::i;:::-;;;;;;;;;;;;;;;;;;;;;;;240:103;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;240:103:2;;;;;;;;;;;;;;;;;:::i;:::-;;347:165;223:5;;;;;;;;;;;209:19;;:10;:19;;;205:26;;;409:19;442:11;409:45;;460:8;:21;;;482:24;;460:47;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;460:47:2;;;;8:9:-1;5:2;;;45:16;42:1;39;24:38;77:16;74:1;67:27;5:2;460:47:2;;;;230:1;205:26;347:165;:::o;82:36::-;;;;:::o;58:20::-;;;;;;;;;;;;;:::o;240:103::-;223:5;;;;;;;;;;;209:19;;:10;:19;;;205:26;;;329:9;302:24;:36;;;;205:26;240:103;:::o",
   "source": "pragma solidity >=0.4.21 <0.6.0;\n\ncontract Migrations {\n  address public owner;\n  uint public last_completed_migration;\n\n  constructor() public {\n    owner = msg.sender;\n  }\n\n  modifier restricted() {\n    if (msg.sender == owner) _;\n  }\n\n  function setCompleted(uint completed) public restricted {\n    last_completed_migration = completed;\n  }\n\n  function upgrade(address new_address) public restricted {\n    Migrations upgraded = Migrations(new_address);\n    upgraded.setCompleted(last_completed_migration);\n  }\n}\n",
-  "sourcePath": "/Users/aditiwagh/Desktop/internship/groupchat/encryptiontest/src/contracts/Migrations.sol",
+  "sourcePath": "/home/aditi/Desktop/app-groupchat/final/encryptiontest/src/contracts/Migrations.sol",
   "ast": {
     "absolutePath": "project:/src/contracts/Migrations.sol",
     "exportedSymbols": {
@@ -1481,8 +1481,8 @@
     "73799": {
       "events": {},
       "links": {},
-      "address": "0x758A5DFFbAb2e11b4B76fE7a6FAB5a55852393c7",
-      "transactionHash": "0x83e080fdf6fa76761bfee0824467219d225f8211e122b91cad2d7bf9604ef735"
+      "address": "0xa262450Af1Efe4F744AC71DCe018D903b1169084",
+      "transactionHash": "0xb02a52fbb4b81e38fb5831cea0b65bef88cff363783b8bcc00d19d8a6edfcc06"
     },
     "1726987294193": {
       "events": {},
@@ -1504,7 +1504,7 @@
     }
   },
   "schemaVersion": "3.4.16",
-  "updatedAt": "2024-11-26T14:51:37.199Z",
+  "updatedAt": "2024-11-28T09:04:37.400Z",
   "networkType": "ethereum",
   "devdoc": {
     "methods": {}

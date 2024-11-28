@@ -54,23 +54,18 @@ const App = () => {
     const [allMessages, setAllMessages] = useState([]);
     const [senders, setSenders] = useState([]);
     const [selectedSender, setSelectedSender] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [registeredContacts, setRegisteredContacts] = useState([]);
     const location = useLocation();
     const navigate = useNavigate();
     const { contract, account, setAccount } = useWeb3();
     const username = (location.state && location.state.username) ? location.state.username : '';
 
     useEffect(() => {
-        if (location.state && location.state.recipient) {
-            setSelectedSender(location.state.recipient);
-        }
         if (contract && account) {
             fetchMessages();
-            if (location.state && location.state.recipient) {
-                fetchMessagesForSender(location.state.recipient);
-            }
         }
-    }, [contract, account, location.state && location.state.recipient]);
-
+    }, [contract, account]);
     const deriveEncryptionKey = async () => {
         try {
             const recipientPublicKeyHex = await contract.methods.getPublicKey(selectedSender).call({ from: account });
@@ -210,14 +205,75 @@ const App = () => {
         setAccount(null);
         window.location.href = '/';
     };
+    const fetchRegisteredContacts = async () => {
+        try {
+            if (contract) {
+                const result = await contract.methods.getAllRegisteredUsers().call({ from: account });
+                const addresses = result[0];
+                const usernames = result[1];
+                const users = addresses.map((address, index) => ({
+                    address,
+                    username: usernames[index],
+                })).filter(user => user.address !== account);
+                setRegisteredContacts(users);
+            }
+        } catch (error) {
+            console.error("Error fetching registered users:", error);
+        }
+    };
+
+    const handleAllContactsClick = async () => {
+        await fetchRegisteredContacts();
+        setIsModalOpen(true);
+    };
+
+    const handleContactClick = async (user) => {
+        setSelectedSender(user.address); // Set the selected sender's address
+        closeModal(); // Close the modal after selecting a contact
+        
+        // Fetch chat history for the selected sender
+        await fetchMessagesForSender(user.address);
+    };
+    
+
+    const closeModal = () => {
+        setIsModalOpen(false);
+    };
+
+    // Helper function to format date to "DD/MM/YYYY"
+const formatDate = (timestamp) => {
+    const date = new Date(timestamp);
+    return date.toLocaleDateString('en-GB'); // 'en-GB' gives the format DD/MM/YYYY
+  };
+  
+  // Helper function to format time to "HH:MM"
+  const formatTime = (timestamp) => {
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); // Only hour and minute
+  };
+  
+  // Function to group messages by date
+  const groupMessagesByDate = (messages) => {
+    const groupedMessages = {};
+  
+    messages.forEach((message) => {
+      const messageDate = formatDate(message.timestamp);
+      if (!groupedMessages[messageDate]) {
+        groupedMessages[messageDate] = [];
+      }
+      groupedMessages[messageDate].push(message);
+    });
+  
+    return groupedMessages;
+  };
+
+  
 
     return (
         <div className="app">
             <div className="sidebar">
             
-                <h2>{username}</h2>
-                <p>Your Ethereum address: {account}</p>
-
+            
                 <ul className="senders-list">
                     {senders.length > 0 ? (
                         senders.map((senderObj, index) => (
@@ -231,29 +287,48 @@ const App = () => {
                 </ul>
             </div>
 
-            <div className="chat-container">
-                <div className="chat-header">
-                    <h2>{selectedSender}</h2>
-                    <button onClick={goToAddContactPage} className="addcontact-button">All Contacts</button>
-                    <button onClick={handleLogout} className="logout-button">Logout</button>
-                </div>
+             {/*  header outside the chat container */}
+             <div className="header">
+  <div className="profile-info">
+    <h2>{username}</h2>
+  </div>
 
-                <div className="chat-window">
-    <ul className="messages">
-        {allMessages.length > 0 ? (
-            allMessages.map((msg, index) => (
-                <li key={index} className={`message ${msg.direction}`}>
-                   { console.log(msg.direction)}
-                    <p>{msg.content}</p>
-                    <span className="timestamp">{new Date(msg.timestamp).toLocaleString()}</span>
-                </li>
-            ))
-        ) : (
-            <li>No messages to display</li>
-        )}
-    </ul>
+  <div className="buttons-container">
+    <button onClick={handleAllContactsClick} className="all-contacts-button">
+      Contacts
+    </button>
+    <button onClick={handleLogout} className="logout-button">
+      Logout
+    </button>
+  </div>
 </div>
 
+            <div className="chat-container">
+            
+            <div className="chat-window" style={{ maxHeight: '500px', overflowY: 'auto' }}>
+    <ul className="messages">
+        {(() => {
+            const groupedMessages = groupMessagesByDate(allMessages); // group messages before rendering
+            return Object.keys(groupedMessages).length > 0 ? (
+                Object.keys(groupedMessages).map((date, index) => (
+                    <li key={index} className="message-section">
+                        <div className="date-header">
+                            <span>{date}</span>
+                        </div>
+                        {groupedMessages[date].map((msg, msgIndex) => (
+                            <div key={msgIndex} className={`message ${msg.direction}`}>
+                                <p>{msg.content}</p>
+                                <span className="timestamp">{formatTime(msg.timestamp)}</span>
+                            </div>
+                        ))}
+                    </li>
+                ))
+            ) : (
+                <li>No messages to display</li>
+            );
+        })()}
+    </ul>
+</div>
                 <div className="message-form">
                     <input
                         type="text"
@@ -265,8 +340,36 @@ const App = () => {
                     <button onClick={sendMessage} className="send-button">Send</button>
                 </div>
             </div>
+            {isModalOpen && (
+    <div className="modal">
+        <div className="modal-content">
+            <h2>Registered Contacts</h2>
+            <div className="registered-contacts-list">
+                {registeredContacts.length > 0 ? (
+                    registeredContacts.map((user, index) => (
+                        <div 
+                            key={index} 
+                            className="contact-box"
+                            onClick={() => handleContactClick(user)}
+                        >
+                            <span className="contact-username">{user.username}</span>
+                            <span className="contact-address">{user.address}</span>
+                        </div>
+                    ))
+                ) : (
+                    <div>No registered contacts found.</div>
+                )}
+            </div>
+            <button onClick={closeModal} className="close-button">Close</button>
+        </div>
+    </div>
+)}
+
         </div>
     );
 };
 
 export default App;
+
+
+

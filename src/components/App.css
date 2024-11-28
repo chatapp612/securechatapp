@@ -7,12 +7,98 @@
     background-color: #f1f3f4;
 }
 
-/* Sidebar (Contacts List) */
+/*----------------------------------------------------------------------- header ---------------------------------------------------------------------------*/
+/* Sidebar */
 .sidebar {
-    background-color: #ececec;
-    width: 100%; /* Full width on mobile */
-    padding: 10px; /* Smaller padding for mobile */
-    box-shadow: none; /* Remove shadow on mobile */
+    width: 25%; /* Left sidebar */
+    background-color: #ffffff;
+    padding: 20px 2px 0px 2px;
+    position: fixed;
+    top: 50px; /* Below header */
+    left: 0;
+    height: 100vh; /* Full screen height */
+    z-index: 1; /* Ensure sidebar is above chat */
+}
+
+/* Chat Header */
+.header {
+    background-color: #303e8a; /* Soft blue for sophistication */
+    height: 70px; /* Small and compact height for the header */
+    display: flex;
+    flex-direction: row; /* Align items horizontally */
+    justify-content: space-between; /* Space between profile and buttons */
+    align-items: center; /* Vertically center content */
+    padding: 0 20px; /* Add padding for spacing */
+    font-size: calc(10px + 2vmin); /* Responsive font size */
+    color: white; /* White text color for clarity */
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 10; /* Ensure header stays on top */
+  }
+  
+  /* Profile Info Section */
+  .profile-info {
+    flex: 1; /* Take remaining space */
+    display: flex;
+    align-items: center;
+    justify-content: flex-start; /* Align profile text to the left */
+  }
+  
+  /* Profile text (username) styling */
+  .profile-info h2 {
+    font-size: 1rem; /* Smaller font for a cute and sleek appearance */
+    font-weight: bold;
+    color: white;
+    margin: 0;
+    padding: 0;
+    text-align: left; /* Align the username to the left */
+  }
+  
+  /* Container for buttons (All Contacts and Logout) */
+  .buttons-container {
+    display: flex;
+    justify-content: flex-end; /* Align buttons to the right */
+    gap: 10px; /* Reduce space between buttons for compactness */
+    align-items: center; /* Vertically center the buttons */
+  }
+  
+  /* Button Styles */
+  button {
+    background-color: #ea4c88; /* Soft pink for a cute feel */
+    color: white;
+    border: none;
+    padding: 4px 10px; /* Smaller padding for a compact button look */
+    font-size: 10px; /* Smaller text for a neat appearance */
+    font-weight: bold;
+    border-radius: 25px; /* Rounded corners for a smooth, friendly look */
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth transitions */
+    box-sizing: border-box; /* Ensure padding is included in the button's total width */
+  }
+  
+  /* Button Hover Effect */
+  button:hover {
+    background-color: #d03d6c; /* Darker pink on hover for interactivity */
+    transform: scale(1.05); /* Slight scaling effect for a smooth hover feel */
+  }
+  
+  /* Active Button Effect */
+  button:active {
+    background-color: #15153c; /* Darker color when the button is clicked */
+    transform: scale(0.95); /* Slight shrinking effect on click */
+  }
+  
+
+/* Main chat container */
+.chat-container {
+    margin-left: 25%; /* Space for sidebar */
+    margin-top: 60px; /* Space for the fixed header */
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
 }
 
 .sidebar h3 {
@@ -20,6 +106,62 @@
     font-size: 1.2em; /* Slightly smaller font for mobile */
     font-weight: 500;
     color: #333;
+}
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    width: 80%;
+    max-width: 400px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+.contact-name {
+    color: #007bff;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.contact-name:hover {
+    text-decoration: underline;
+}
+
+.registered-contacts-list {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0;
+}
+
+.registered-contacts-list li {
+    margin: 10px 0;
+    font-size: 16px;
+}
+
+.close-button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #f44336;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.close-button:hover {
+    background-color: #d32f2f;
 }
 
 .fetch-button {
@@ -47,12 +189,13 @@
 .senders-list li {
     display: flex;
     align-items: center;
-    padding: 10px 15px;
+    padding: 15px 15px;
     margin-bottom: 10px;
-    border-radius: 10px;
-    background-color: #fff;
+    border-radius: 2px;
+    background-color: #eeeefa;
     cursor: pointer;
     transition: background-color 0.3s, box-shadow 0.3s;
+    border-bottom: 1px solid #77668a;
 }
 
 .senders-list li:hover {
@@ -60,7 +203,6 @@
     box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Chat Window */
 .chat-container {
     width: 100%; /* Full width on mobile */
     display: flex;
@@ -69,51 +211,28 @@
     background-color: #ffffff;
 }
 
-.chat-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px;
-    background-color: #f1f1f1;
-}
-.chat-header button {
-    padding: 8px 15px; /* Smaller padding for compact buttons */
-    background-color: #222261d7; /* Blue color */
-    color: #fff;
-    border: none;
-    border-radius: 25px;
-    font-size: 14px; /* Smaller font size for buttons */
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth animations */
-}
 
-.chat-header button:hover {
-    background-color: #d44179; /* Darker blue on hover */
-    transform: scale(1.05); /* Slightly enlarge on hover */
-}
 
-.chat-header button:active {
-    background-color: #15153c; /* Even darker blue on click */
-    transform: scale(0.95); /* Slight shrinking on click */
-}
 
-/* Aligning the "Add New Contact" and "Logout" buttons to the right */
-.chat-header button:last-child {
-    margin-left: 10px; /* Adds space between the buttons */
-}
+
+
 
 .chat-window {
+
     flex: 1; /* Allow it to grow and fill space */
     padding: 20px;
     overflow-y: auto;
     background-color: #ffffff;
-    border-left: 1px solid #e0e0e0; /* Keeps the border consistent */
+  
+
+   
 }
+
 
 .messages {
     list-style: none;
     padding: 0;
-    margin: 0; /* Ensure no extra margin */
+    margin: 0;
 }
 
 .message {
@@ -124,9 +243,8 @@
     position: relative;
     box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2), /* Main shadow */
                 0px 1px 10px rgba(0, 0, 0, 0.1); /* Lighter shadow for depth */
-    transition: box-shadow 0.3s; /* Smooth transition for shadows */
+    transition: box-shadow 0.3s;
 }
-
 
 .message.sent:hover {
     box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.3),
@@ -139,7 +257,7 @@
     clear: both;
     animation: slideInRight 0.4s ease-out;
     border-radius: 20px;
-    margin-right: 10px; /* Add some space to the right */
+    margin-right: 10px;
 }
 
 .message.received {
@@ -150,7 +268,7 @@
     color: white;
     animation: slideInLeft 0.4s ease-out;
     border-radius: 20px;
-    margin-left: 10px; /* Add some space to the left */
+    margin-left: 10px;
 }
 
 .message.received:hover {
@@ -172,7 +290,7 @@
 /* Input Area */
 .input-area {
     display: flex;
-    flex-direction: column; /* Stack inputs vertically on mobile */
+    flex-direction: column;
     padding: 15px;
     background-color: #f7f7f7;
     border-top: 1px solid #e0e0e0;
@@ -184,49 +302,49 @@
     align-items: center;
     justify-content: space-between;
     padding: 10px;
-    background-color: #f8f9fa; /* Light background for the message input area */
-    border-top: 1px solid #ccc; /* Subtle border on top */
+    background-color: #f8f9fa;
+    border-top: 1px solid #ccc;
 }
 
 .message-form input[type="text"] {
-    flex: 1; /* Take up available space */
+    flex: 1;
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 25px;
     font-size: 16px;
-    outline: none; /* Remove default outline on focus */
+    outline: none;
     background-color: #fff;
-    margin-right: 10px; /* Space between input and button */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Add slight shadow */
-    transition: border-color 0.3s ease; /* Smooth border transition on focus */
+    margin-right: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: border-color 0.3s ease;
 }
 
 .message-form input[type="text"]:focus {
-    border-color: #222261d7; /* Change border color on focus */
+    border-color: #222261d7;
 }
 
 .message-form button {
     padding: 10px 20px;
-    background-color: #222261d7; /* Blue button */
+    background-color: #222261d7;
     color: #fff;
     border: none;
     border-radius: 25px;
     font-size: 16px;
     cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth animations */
+    transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .message-form button:hover {
-    background-color: #d44179; /* Darker blue on hover */
-    transform: scale(1.05); /* Slightly enlarge on hover */
+    background-color: #d44179;
+    transform: scale(1.05);
 }
 
 .message-form button:active {
-    background-color: #222261d7; /* Even darker blue on click */
-    transform: scale(0.95); /* Slightly shrink on click */
+    background-color: #222261d7;
+    transform: scale(0.95);
 }
 
-.send-button, .addcontact-button ,.cancel-button ,.save-button ,.handlelogin-button,.handlesignup-button{
+.send-button, .addcontact-button, .cancel-button, .save-button, .handlelogin-button, .handlesignup-button {
     padding: 12px 25px;
     border: none;
     border-radius: 25px;
@@ -234,24 +352,11 @@
     color: white;
     cursor: pointer;
     transition: background-color 0.3s;
-    width: 100%; /* Full width on mobile */
+    width: 100%;
 }
 
-.send-button:hover, .addcontact-button:hover ,.cancel-button ,.save-button {
+.send-button:hover, .addcontact-button:hover, .cancel-button, .save-button {
     background-color: #064e45;
-}
-
-
-.h2 {
-    font-size: 1.2em;
-    color: #ffffff;
-    margin: 0;
-    padding: 10px 0;
-    text-align: left;
-    font-weight: bold;
-    letter-spacing: 0.5px;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-    font-family: 'Helvetica Neue', 'Arial', sans-serif;
 }
 
 /* Animations */
@@ -280,47 +385,14 @@
 /* Media Queries for Responsive Design */
 @media (min-width: 768px) {
     .app {
-        flex-direction: row; /* Row layout for larger screens */
+        flex-direction: row;
     }
 
     .sidebar {
-        width: 25%; /* Sidebar takes 1/4th of the screen on larger screens */
-        box-shadow: 2px 0px 5px rgba(0, 0, 0, 0.1);
+        width: 25%;
     }
 
-    .chat-container {
-        width: 75%; /* Chat container takes 3/4th of the screen */
-    }
-
-    .input-area {
-        flex-direction: row; /* Row layout for inputs on larger screens */
-    }
-
-    .recipient-input,
-    .message-input {
-        margin-right: 10px;
-        margin-bottom: 0;
-        border-radius: 25px; /* Larger border radius */
-    }
-
-    .send-button {
-        width: auto;
-    }
-
-    .messages {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .message {
-        max-width: 75%; /* Increase the width for larger screens */
-    }
-
-    .message.sent {
-        align-self: flex-end; /* Align sent messages to the right on desktop */
-    }
-
-    .message.received {
-        align-self: flex-start; /* Align received messages to the left on desktop */
+    .chat-header{
+        width: 100%; 
     }
 }
