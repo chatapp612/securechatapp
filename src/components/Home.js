@@ -51,6 +51,8 @@ const Home = () => {
 
     const generateKeys = async () => {
         await sodium.ready;
+
+        //elliptic curve cryptography (ECC) based on the Curve25519 curve
         const keyPair = sodium.crypto_kx_keypair();
         console.log("keypairs generated");
         const publicKeyHex = sodium.to_hex(keyPair.publicKey);

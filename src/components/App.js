@@ -82,9 +82,12 @@ const App = () => {
             const recipientPublicKey = sodium.from_hex(recipientPublicKeyHex);
             const privateKey = sodium.from_hex(privateKeyHex);
             const rawSecret = sodium.crypto_scalarmult(privateKey, recipientPublicKey);
-
+            //BLAKE2B-subkeylen(key=key, message={}, salt=subkey_id || {0}, personal=ctx || {0})
             const derivedKey = sodium.crypto_kdf_derive_from_key(32, 1, 'encryption', rawSecret);
-            localStorage.setItem(`${account}_${selectedSender}`, sodium.to_hex(derivedKey));
+            const key1 = `${account}_${selectedSender}`;
+            const key2 = `${selectedSender}_${account}`;
+            localStorage.setItem(key1, sodium.to_hex(derivedKey));
+            localStorage.setItem(key2, sodium.to_hex(derivedKey));
             return sodium.to_hex(derivedKey);
         } catch (error) {
             console.error("Error deriving encryption key:", error);
@@ -239,7 +242,7 @@ const App = () => {
     <ul className="messages">
         {allMessages.length > 0 ? (
             allMessages.map((msg, index) => (
-                <li key={index} className={msg.direction}>
+                <li key={index} className={`message ${msg.direction}`}>
                    { console.log(msg.direction)}
                     <p>{msg.content}</p>
                     <span className="timestamp">{new Date(msg.timestamp).toLocaleString()}</span>
