@@ -43,7 +43,7 @@ const AddContactPage = () => {
     };
 
     const handleUserClick = (user) => {
-        navigate('/app#/app', { state: { recipient: user.address} });  // Passing the recipient address to App component
+        navigate('/app', { state: { recipient: user.address} });  // Passing the recipient address to App component
     };
 
     return (
@@ -58,7 +58,8 @@ const AddContactPage = () => {
                     {users.length > 0 ? (
                         users.map((user, index) => (
                             <li key={index} className="user-item">
-                                <a href="/app#/app" onClick={() => handleUserClick(user)}>{user.username}</a>
+                                <a 
+                                onClick={() => handleUserClick(user)}>{user.username}</a>
                             </li>
                         ))
                     ) : (
