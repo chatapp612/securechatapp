@@ -271,6 +271,7 @@ const formatDate = (timestamp) => {
 
     return (
         <div className="app">
+           
             <div className="sidebar">
             
             
@@ -294,18 +295,31 @@ const formatDate = (timestamp) => {
   </div>
 
   <div className="buttons-container">
-    <button onClick={handleAllContactsClick} className="all-contacts-button">
-      Contacts
-    </button>
-    <button onClick={handleLogout} className="logout-button">
-      Logout
-    </button>
+  <div className="all-contacts-container" onClick={handleAllContactsClick}>
+  <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAADJklEQVR4nO2Xy0tVURSHPyu1zB4kWMMGaUI1yqBJ0KgHUU2KMs0kMtLeDwr/Af+C6EFlUEFmzQuxSWZh9pgHKT0HRQaVVuAjlvxO7C7nnnPuvUe51Plgw2HvtfdaZ6+919oLEhISEhISEv5iDtAC9AHf1frUV0qeswp4B4ynaW+BavKUSuCLDH0IrNeOl+q7R2ODQAV5SJcMbAdm+IxbX4dkOskzqmTYZ2BegNx8eWBcHptUCoA9cr13Ge1o1GvMZb+MuhZh3euS3ZeDvkhcDbiMbSmyLepvjbBuq2RtTrb6QqnTxG/aqYXAIqBRfTZW68g3ZuCBGz4eqMtQXyhexGjyGWtyIk3qHRjM8g70ZKgvlCFNKvcZK9eYnVGXTvV3BESh25K5F4O+QLJZsMLZXdvRDcrK1jYCj5xItSQGfYEEubRZY90+Y9XKtuku4xtgZYz60lKbcqnmqrmXaleauZZ5zwBPJGutFzgNzJ4EfWlpC9jJK8RPW9z6ChTeup2dfKDdyiqx5Jm+f5MK4JTCZL/zJHgF3AVO+kSgSWGm3HkLGACGFerMqJu6UEWO/HLgDjAacI69Nqp8sMyZX6yj0i59Q2oDsqFWMpEw4Q8RDHkP7ACOAz/VN6TLuA1YDJSo2fd2vXeGJftDc3dmoK8myPBC4JIz4SlwAFgqI2bpyWCx+oXPrp4DFkTYoDLggo+3nmvtKukqke4mjXlyF/0yfYETxuzMNoTc/AKngPkKbCJzNjsxviuCvr1Oxr6cKtDgJBKra8OwEnFMR2cN2bMW+KW11kWQX60NHledMIG56lMGT9Zip3A/SO4ccQr+KBd1t+Q/6qhNuMY6HkdU6HnLngrTyJ3pwDOtaRVZFHolb7ZzP9UlIXjKLALFRY3WtLWjUC95s/3PmYoSQSqdwsXNA7lSlGGxX+YEEF47Oxp2JLzS0ZJZ3LSnKfZTmeZ4zBIrR0MSiPsOPzQFr9Fmp687xDazB+8n+tMI2YvQY4VCnoXbLUp+uVIIbNWaYylPjHQ/YLYezlbh+QhpP9t2linAwt4J4CUwEoPRI1rrWExhOSEhISHhP+I3exCM/Id5dDAAAAAASUVORK5CYII=" alt="group"
+        className="all-contacts-icon"
+    />
+    <p className="all-contacts-text">Contacts</p>
+</div>
+    <div className="logout-container" onClick={handleLogout}>
+    <img 
+        src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAg0lEQVR4nO2Wyw2AIBAFR0ugM2IlFmKsy5L0ssYErx5cwkNkEo7AJPuFTqVYpvN9gbd0AashBIdSYAeiUiB6Ps8SQyAAs0pgBLb0xqoQuJhSIt4SA4UFXBL2IOBpzUsTAp4QSJPwf2UYlI0oOu62MYxMPY6thoXEmhAw9VpuKoEOpTgBWrm2y79fsd4AAAAASUVORK5CYII="
+        alt="logout"
+        className="logout-icon"
+    />
+    <p className="logout-text">Logout</p>
+</div>
+    
   </div>
 </div>
 
+
             <div className="chat-container">
-            
+            <div className="chat-header">
+        <p>{selectedSender}</p> {/* Default text if no sender is selected */}
+    </div>
             <div className="chat-window" style={{ maxHeight: '500px', overflowY: 'auto' }}>
+                
     <ul className="messages">
         {(() => {
             const groupedMessages = groupMessagesByDate(allMessages); // group messages before rendering
@@ -328,8 +342,7 @@ const formatDate = (timestamp) => {
             );
         })()}
     </ul>
-</div>
-                <div className="message-form">
+    <div className="message-form">
                     <input
                         type="text"
                         value={message}
@@ -337,29 +350,36 @@ const formatDate = (timestamp) => {
                         onChange={(e) => setMessage(e.target.value)}
                         placeholder="Type a message..."
                     />
-                    <button onClick={sendMessage} className="send-button">Send</button>
+                  {/* Send Icon as an Image */}
+                
+                  <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAACXBIWXMAAAsTAAALEwEAmpwYAAAA5UlEQVR4nO3WMUpDQRSF4Q/UQhsRbKzdQMAFaCtqmTalYh9wATZuwMIt2FoGRJusIK0QSF4jdnaCXBGmsBFM4purkAN//V+GmTOXZRJzhCmecIGNWuIJ4gsNzrDWtji+YYxTrNQWR2GEboY4CkPsZ4ijMEAnQxx4xy12a4uj8IYb7MwjbhaUf/KKS2zOIj4uBRK/wAv6WJ9lgC3soYcr3JU2m2eAaemAVQtkGwc4xzXu8fzDAR6zxA9/8qhPsi5Xk/WcIqtA4r9U5qD2JzGs/S2Oai8C47ZXn0nWsndY5NXX22W0kQ875CXXn83dMgAAAABJRU5ErkJggg==" alt="send"
+                className="send-icon" 
+                onClick={sendMessage} 
+            />
                 </div>
+</div>
+               
             </div>
             {isModalOpen && (
     <div className="modal">
         <div className="modal-content">
             <h2>Registered Contacts</h2>
-            <div className="registered-contacts-list">
+            <ul className="registered-contacts-list">
                 {registeredContacts.length > 0 ? (
                     registeredContacts.map((user, index) => (
-                        <div 
+                        <li
                             key={index} 
                             className="contact-box"
                             onClick={() => handleContactClick(user)}
                         >
                             <span className="contact-username">{user.username}</span>
-                            <span className="contact-address">{user.address}</span>
-                        </div>
+                          
+                        </li>
                     ))
                 ) : (
                     <div>No registered contacts found.</div>
                 )}
-            </div>
+            </ul>
             <button onClick={closeModal} className="close-button">Close</button>
         </div>
     </div>

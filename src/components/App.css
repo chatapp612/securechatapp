@@ -2,25 +2,63 @@
 .app {
     font-family: 'Roboto', sans-serif;
     display: flex;
-    flex-direction: column; /* Column layout for mobile */
+    flex-direction:column; /* Column layout for mobile */
     height: 100vh;
     background-color: #f1f3f4;
 }
 
-/*----------------------------------------------------------------------- header ---------------------------------------------------------------------------*/
-/* Sidebar */
+
+/*-----------------------------------------------------------------------  Sidebar  ---------------------------------------------------------------------------*/
+
 .sidebar {
     width: 25%; /* Left sidebar */
-    background-color: #ffffff;
+    background-color: #ffffff; /* White background */
     padding: 20px 2px 0px 2px;
     position: fixed;
     top: 50px; /* Below header */
     left: 0;
     height: 100vh; /* Full screen height */
     z-index: 1; /* Ensure sidebar is above chat */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Dramatic shadow */
+    border-right: 1px solid #dcdcdc; /* Optional subtle border */
 }
 
-/* Chat Header */
+/* Senders List Styling */
+.senders-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.senders-list li {
+    display: flex;
+    align-items: center;
+    padding: 15px 15px;
+    border-radius: 8px; /* Slightly rounded corners for a modern look */
+    background-color: #ffffff; /* White background */
+    border: 1px solid #e0e0e0; /* Light grey border for defined edges */
+    cursor: pointer;
+    transition: background-color 0.3s, box-shadow 0.3s, transform 0.2s;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* Subtle greyish shadow */
+   
+}
+
+/* Hover Effects */
+.senders-list li:hover {
+    background-color: #f9f9f9; /* Slightly off-white for hover effect */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* More pronounced shadow on hover */
+    transform: translateY(-2px); /* Slight lift effect */
+}
+
+.sidebar h3 {
+    margin-bottom: 10px; /* Reduce margin for mobile */
+    font-size: 1.2em; /* Slightly smaller font for mobile */
+    font-weight: 500;
+    color: #333;
+}
+
+
+/*-------------------------------------------------------------------------------Header-------------------------------------------------------------------- */
 .header {
     background-color: #303e8a; /* Soft blue for sophistication */
     height: 70px; /* Small and compact height for the header */
@@ -60,10 +98,86 @@
   .buttons-container {
     display: flex;
     justify-content: flex-end; /* Align buttons to the right */
-    gap: 10px; /* Reduce space between buttons for compactness */
+    gap: 50px; /* Reduce space between buttons for compactness */
     align-items: center; /* Vertically center the buttons */
   }
-  
+
+  /* Container for logout icon and text */
+.logout-container {
+    display: flex;              /* Enable flexbox for alignment */
+    flex-direction: column;     /* Stack the icon and text vertically */
+    align-items: center;        /* Center-align both icon and text */
+    justify-content: center;    /* Center content within the container */
+    cursor: pointer;            /* Make the container clickable */
+    gap: 9px;                   /* Space between icon and text */
+    color: white;               /* Ensure text color is white */
+    transition: transform 0.2s ease; /* Add smooth hover effect */
+}
+
+/* Logout Icon */
+.logout-icon {
+    width: 30px;                /* Set icon size */
+    height: 30px;               /* Ensure it's square */
+    filter: invert(1);          /* Make the icon white */
+    transition: transform 0.2s ease, opacity 0.3s ease; /* Smooth hover effects */
+}
+
+/* Logout Text */
+.logout-text {
+    font-size: 12px;            /* Small text size */
+    font-weight: bold;          /* Make the text bold */
+    margin: 0;                  /* Remove default margin */
+    text-align: center;         /* Center-align the text */
+}
+
+/* Hover Effect */
+.logout-container:hover {
+    transform: scale(1.1);      /* Slight scaling on hover */
+}
+
+.logout-container:hover .logout-icon {
+    opacity: 0.8;               /* Slight transparency on hover */
+}
+
+/* Container for contacts icon and text */
+.all-contacts-container {
+    display: flex;              /* Enable flexbox for alignment */
+    flex-direction: column;     /* Stack the icon and text vertically */
+    align-items: center;        /* Center-align both icon and text */
+    justify-content: center;    /* Center content within the container */
+    cursor: pointer;            /* Make the container clickable */
+    gap: 4px;                   /* Space between icon and text */
+    color: white;               /* Ensure text color is white */
+    transition: transform 0.2s ease; /* Add smooth hover effect */
+}
+
+/* Contacts Icon */
+.all-contacts-icon {
+    width: 35px;                /* Set icon size */
+    height: 35px;               /* Ensure it's square */
+    filter: invert(1);          /* Make the icon white */
+    transition: transform 0.2s ease, opacity 0.3s ease; /* Smooth hover effects */
+}
+
+/* Contacts Text */
+.all-contacts-text {
+    font-size: 12px;            /* Small text size */
+    font-weight: bold;          /* Make the text bold */
+    margin: 0;                  /* Remove default margin */
+    text-align: center;         /* Center-align the text */
+}
+
+/* Hover Effect */
+.all-contacts-container:hover {
+    transform: scale(1.1);      /* Slight scaling on hover */
+}
+
+.all-contacts-container:hover .all-contacts-icon {
+    opacity: 0.8;               /* Slight transparency on hover */
+}
+
+
+/*-------------------------------------------------------------------------------Button------------------------------------------------------------------- */
   /* Button Styles */
   button {
     background-color: #ea4c88; /* Soft pink for a cute feel */
@@ -91,9 +205,8 @@
     transform: scale(0.95); /* Slight shrinking effect on click */
   }
   
-
-/* Main chat container */
-.chat-container {
+  /*-------------------------------------------------------------------------------Chat container -------------------------------------------------------------------- */
+  .chat-container {
     margin-left: 25%; /* Space for sidebar */
     margin-top: 60px; /* Space for the fixed header */
     padding: 20px;
@@ -101,134 +214,195 @@
     flex-direction: column;
 }
 
-.sidebar h3 {
-    margin-bottom: 10px; /* Reduce margin for mobile */
-    font-size: 1.2em; /* Slightly smaller font for mobile */
-    font-weight: 500;
-    color: #333;
-}
-.modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
-
-.modal-content {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    text-align: center;
-    width: 80%;
-    max-width: 400px;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-}
-.contact-name {
-    color: #007bff;
-    cursor: pointer;
-    font-weight: bold;
-}
-
-.contact-name:hover {
-    text-decoration: underline;
-}
-
-.registered-contacts-list {
-    list-style: none;
-    padding: 0;
-    margin: 20px 0;
-}
-
-.registered-contacts-list li {
-    margin: 10px 0;
-    font-size: 16px;
-}
-
-.close-button {
-    margin-top: 20px;
-    padding: 10px 20px;
-    background-color: #f44336;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-.close-button:hover {
-    background-color: #d32f2f;
-}
-
-.fetch-button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 25px;
-    background-color: #090927d7;
-    color: white;
-    cursor: pointer;
-    margin-bottom: 20px;
-    width: 100%;
-    transition: background-color 0.3s;
-}
-
-.fetch-button:hover {
-    background-color: #101042d7;
-}
-
-.senders-list {
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-}
-
-.senders-list li {
-    display: flex;
-    align-items: center;
-    padding: 15px 15px;
-    margin-bottom: 10px;
-    border-radius: 2px;
-    background-color: #eeeefa;
-    cursor: pointer;
-    transition: background-color 0.3s, box-shadow 0.3s;
-    border-bottom: 1px solid #77668a;
-}
-
-.senders-list li:hover {
-    background-color: #f0f0f0;
-    box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.1);
-}
-
-.chat-container {
+  .chat-container {
     width: 100%; /* Full width on mobile */
     display: flex;
     flex-direction: column;
     height: 100%; /* Fill available height */
     background-color: #ffffff;
 }
-
-
-
-
-
-
-
+/* Chat Window */
 .chat-window {
-
-    flex: 1; /* Allow it to grow and fill space */
+    margin-top: 60px; /* Adds space so content does not go under the fixed header */
+  
+    
+    display: flex;
+    
+    flex-direction: column;
+    height: calc(100vh - 70px); /* Full viewport height minus the height of the header */
     padding: 20px;
     overflow-y: auto;
     background-color: #ffffff;
-  
-
-   
+    position: relative; /* Allows positioning of child elements */
+}
+/* Message Form */
+/* Message Form */
+.message-form {
+    position: fixed;      /* Fixes the form to the bottom of the screen */
+    bottom: 0;            /* Positions it at the bottom */
+    left: 26%;            /* Aligns it to the left with the same padding as .chat-window */
+    width: 73%;           /* 100% width minus the left and right padding */
+    padding: 10px;
+    background-color: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;  /* Aligns the input and button correctly */
+    z-index: 1000;        /* Keeps the form above other content */
 }
 
+/* Message Input */
+.message-input {
+    flex: 1;              /* Takes up remaining space */
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    font-size: 14px;
+    width: 100%;          /* Full width to ensure it stretches correctly */
+}
 
+/* Message Input Focus Effect */
+.message-input:focus {
+    outline: none;        /* Remove default focus outline */
+    background-color: #f9f9f9; /* Slightly darker background on focus */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Pronounced shadow on focus */
+}
+
+/* Send Button */
+.send-button {
+    background-color: #ea4c88; /* Soft pink for the button */
+    color: white;
+    border: none;
+    padding: 5px 12px;         /* Small padding for a compact button */
+    font-size: 14px;           /* Keep text small */
+    font-weight: bold;
+    border-radius: 25px;       /* Rounded corners */
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth transitions */
+    box-sizing: border-box;
+    width: auto;               /* Ensures button is not stretched */
+}
+
+/* Send Button Hover Effect */
+.send-button:hover {
+    background-color: #d03d6c; /* Darker pink on hover */
+    transform: scale(1.05);     /* Slight scaling effect */
+}
+
+/* Send Button Active Effect */
+.send-button:active {
+    background-color: #15153c; /* Darker color when clicked */
+    transform: scale(0.95);     /* Shrinking effect when clicked */
+}
+.send-icon {
+    width: 30px; /* Set the size of the send icon */
+    height: 30px; /* Ensure the icon maintains a square aspect ratio */
+    cursor: pointer; /* Changes cursor to pointer on hover */
+    transition: transform 0.2s ease, opacity 0.3s ease; /* Smooth transition */
+    margin-left: 10px; /* Space between input and icon */
+}
+
+/* Send Icon Hover Effect */
+.send-icon:hover {
+    transform: scale(1.1); /* Slight zoom on hover */
+    opacity: 0.8; /* Slight transparency on hover */
+}
+
+/* Send Icon Active Effect */
+.send-icon:active {
+    transform: scale(0.95); /* Slight shrink on click */
+}
+
+ /*------------------------------------------------------------------------------- Modal -------------------------------------------------------------------- */
+
+ .modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* Ensure it's above all other content */
+}
+
+.modal-content {
+    background-color: #ffffff; /* White background */
+    padding: 20px;
+    border-radius: 10px; /* Slightly rounded corners for a modern look */
+    text-align: center;
+    width: 80%;
+    max-height: 80vh; /* Set maximum height to 80% of the viewport height */
+    overflow-y: auto; /* Enable vertical scrolling when content overflows */
+    max-width: 400px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Dramatic shadow for depth */
+    border: 1px solid #e0e0e0; /* Light grey border for defined edges */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Add hover-like effect when the modal is active */
+.modal-content:hover {
+    transform: translateY(-5px); /* Slight lift effect for interactivity */
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25); /* More pronounced shadow */
+}
+
+/* Contact Name Styling */
+.contact-name {
+    color: #007bff; /* Blue color */
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.contact-name:hover {
+    text-decoration: underline; /* Highlighted on hover */
+}
+
+/* Registered Contacts List */
+.registered-contacts-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.registered-contacts-list li {
+    display: flex;
+    align-items: center;
+    padding: 15px 15px;
+    border-radius: 8px; /* Slightly rounded corners for a modern look */
+    background-color: #ffffff; /* White background */
+    border: 1px solid #e0e0e0; /* Light grey border for defined edges */
+    cursor: pointer;
+    transition: background-color 0.3s, box-shadow 0.3s, transform 0.2s;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* Subtle greyish shadow */
+}
+
+/* Hover Effect for Registered Contacts */
+.registered-contacts-list li:hover {
+    background-color: #f9f9f9; /* Slightly off-white on hover */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Enhanced shadow */
+    transform: translateY(-3px); /* Slight lift effect */
+}
+
+/*------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+.chat-header {
+    position: fixed;           /* Fixes it to the top of the screen */
+    top: 70px;                 /* Anchors it below the viewport top */
+    left: 25.3%;               /* Aligns it to the left with 25.3% width */
+    width: 50%;                /* Ensures the header spans 50% of the screen width */
+    background-color: white;   /* White background for clean look */
+    padding: 8px 15px;         /* Smaller padding for a more compact header */
+    font-size: 14px;           /* Slightly smaller font size */
+    font-weight: bold;         /* Bold font for prominence */
+    text-align: left;          /* Aligns the text to the left */
+    color: #333;               /* Neutral text color */
+    border-radius: 5px;        /* Rounded corners for a smooth appearance */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle grey shadow */
+    z-index: 1;                /* Ensures it stays above other content */
+  }
+  
+  
 .messages {
     list-style: none;
     padding: 0;
@@ -238,7 +412,7 @@
 .message {
     padding: 8px 12px;
     margin: 10px 0;
-    border-radius: 10px;
+    border-radius: 20px;
     max-width: 60%;
     position: relative;
     box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2), /* Main shadow */
@@ -258,6 +432,7 @@
     animation: slideInRight 0.4s ease-out;
     border-radius: 20px;
     margin-right: 10px;
+    margin-bottom: 20px
 }
 
 .message.received {
@@ -269,6 +444,7 @@
     animation: slideInLeft 0.4s ease-out;
     border-radius: 20px;
     margin-left: 10px;
+    margin-bottom: 20px
 }
 
 .message.received:hover {
@@ -287,77 +463,15 @@
     text-align: right;
 }
 
-/* Input Area */
-.input-area {
-    display: flex;
-    flex-direction: column;
-    padding: 15px;
-    background-color: #f7f7f7;
-    border-top: 1px solid #e0e0e0;
-    border-radius: 0 0 5px 5px;
+.date-header {
+    text-align: center;       /* Center-aligns the text */
+    font-size: 12px;          /* Sets a small text size */
+    color: #aaa;              /* Light grey color for the text */
+    margin: 10px 0;           /* Adds vertical spacing around the header */
+           /* Optional: make it slightly more prominent */
 }
 
-.message-form {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px;
-    background-color: #f8f9fa;
-    border-top: 1px solid #ccc;
-}
 
-.message-form input[type="text"] {
-    flex: 1;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 25px;
-    font-size: 16px;
-    outline: none;
-    background-color: #fff;
-    margin-right: 10px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    transition: border-color 0.3s ease;
-}
-
-.message-form input[type="text"]:focus {
-    border-color: #222261d7;
-}
-
-.message-form button {
-    padding: 10px 20px;
-    background-color: #222261d7;
-    color: #fff;
-    border: none;
-    border-radius: 25px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-}
-
-.message-form button:hover {
-    background-color: #d44179;
-    transform: scale(1.05);
-}
-
-.message-form button:active {
-    background-color: #222261d7;
-    transform: scale(0.95);
-}
-
-.send-button, .addcontact-button, .cancel-button, .save-button, .handlelogin-button, .handlesignup-button {
-    padding: 12px 25px;
-    border: none;
-    border-radius: 25px;
-    background-color: #090927d7;
-    color: white;
-    cursor: pointer;
-    transition: background-color 0.3s;
-    width: 100%;
-}
-
-.send-button:hover, .addcontact-button:hover, .cancel-button, .save-button {
-    background-color: #064e45;
-}
 
 /* Animations */
 @keyframes slideInRight {
@@ -396,3 +510,5 @@
         width: 100%; 
     }
 }
+
+
