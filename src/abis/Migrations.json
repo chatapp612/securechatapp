@@ -1481,8 +1481,8 @@
     "73799": {
       "events": {},
       "links": {},
-      "address": "0x8e7AE1Ee64524032a0281b52C83D1F29D0EdBFAE",
-      "transactionHash": "0x8747ff9a2a909635a781aaf2b97b7412d8ca513ce4fc340cac27e172ee6d6a1b"
+      "address": "0x3499777D8E93514e707E954Cc3B4a539e3801049",
+      "transactionHash": "0x8ab610f2734249820f4e95da8eace5c14b44e2249cb6674c56bb0c6f659fc716"
     },
     "1726987294193": {
       "events": {},
@@ -1504,7 +1504,7 @@
     }
   },
   "schemaVersion": "3.4.16",
-  "updatedAt": "2024-11-29T10:32:42.012Z",
+  "updatedAt": "2024-12-05T10:16:41.812Z",
   "networkType": "ethereum",
   "devdoc": {
     "methods": {}

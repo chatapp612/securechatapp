@@ -65,7 +65,10 @@ const App = () => {
         if (contract && account) {
             fetchMessages();
         }
+
     }, [contract, account]);
+
+   
     const deriveEncryptionKey = async () => {
         try {
             const recipientPublicKeyHex = await contract.methods.getPublicKey(selectedSender).call({ from: account });
@@ -111,6 +114,7 @@ const App = () => {
     
                 alert("Message sent successfully!");
                 setMessage('');
+               
     
                 fetchMessagesForSender(selectedSender);
             } catch (error) {
@@ -274,11 +278,11 @@ const formatDate = (timestamp) => {
            
             <div className="sidebar">
             
-            
+          
                 <ul className="senders-list">
                     {senders.length > 0 ? (
                         senders.map((senderObj, index) => (
-                            <li key={index} onClick={() => fetchMessagesForSender(senderObj.address)}>
+                            <li key={index} onClick={() => fetchMessagesForSender(senderObj.address)} className={selectedSender === senderObj.address ? 'selected' : ''}>
                                 <span>{senderObj.name}</span>
                             </li>
                         ))
@@ -315,9 +319,7 @@ const formatDate = (timestamp) => {
 
 
             <div className="chat-container">
-            <div className="chat-header">
-        <p>{selectedSender}</p> {/* Default text if no sender is selected */}
-    </div>
+           
             <div className="chat-window" style={{ maxHeight: '500px', overflowY: 'auto' }}>
                 
     <ul className="messages">

@@ -29,7 +29,11 @@
     padding: 0;
     margin: 0;
 }
-
+.senders-list li.selected {
+    background-color: #dfdfe6ce; /* Light greenish background for selected sender */
+    border-color: #222261d7; /* Border color to match the highlight */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Slightly stronger shadow for selected */
+}
 .senders-list li {
     display: flex;
     align-items: center;
@@ -45,7 +49,8 @@
 
 /* Hover Effects */
 .senders-list li:hover {
-    background-color: #f9f9f9; /* Slightly off-white for hover effect */
+    background-color: #f9f9f9;
+    border-color: #303e8a; /* Slightly off-white for hover effect */
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* More pronounced shadow on hover */
     transform: translateY(-2px); /* Slight lift effect */
 }
@@ -223,7 +228,7 @@
 }
 /* Chat Window */
 .chat-window {
-    margin-top: 60px; /* Adds space so content does not go under the fixed header */
+    
   
     
     display: flex;
@@ -386,21 +391,7 @@
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-.chat-header {
-    position: fixed;           /* Fixes it to the top of the screen */
-    top: 70px;                 /* Anchors it below the viewport top */
-    left: 25.3%;               /* Aligns it to the left with 25.3% width */
-    width: 50%;                /* Ensures the header spans 50% of the screen width */
-    background-color: white;   /* White background for clean look */
-    padding: 8px 15px;         /* Smaller padding for a more compact header */
-    font-size: 14px;           /* Slightly smaller font size */
-    font-weight: bold;         /* Bold font for prominence */
-    text-align: left;          /* Aligns the text to the left */
-    color: #333;               /* Neutral text color */
-    border-radius: 5px;        /* Rounded corners for a smooth appearance */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle grey shadow */
-    z-index: 1;                /* Ensures it stays above other content */
-  }
+
   
   
 .messages {
@@ -467,7 +458,7 @@
     text-align: center;       /* Center-aligns the text */
     font-size: 12px;          /* Sets a small text size */
     color: #aaa;              /* Light grey color for the text */
-    margin: 10px 0;           /* Adds vertical spacing around the header */
+          /* Adds vertical spacing around the header */
            /* Optional: make it slightly more prominent */
 }
 

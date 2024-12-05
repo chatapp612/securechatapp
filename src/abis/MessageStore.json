@@ -12863,12 +12863,12 @@
     "73799": {
       "events": {},
       "links": {},
-      "address": "0x685bD0cFb3C60168EF8852f22BE8b40Bcc19E39B",
-      "transactionHash": "0x3ec12167d0b5f9b3c69b5c0f60ce8b075788f6bbb1e0b1cd939be17afd8e96f5"
+      "address": "0x3f4621bDE1928aB1cD1B8DAa4b617243E4E8b2a1",
+      "transactionHash": "0x40e7d3dc611b80ba6ffcc045ea7390fc90f1a5377870836361c8ededd7bbebea"
     }
   },
   "schemaVersion": "3.4.16",
-  "updatedAt": "2024-11-29T10:32:41.994Z",
+  "updatedAt": "2024-12-05T10:16:41.791Z",
   "networkType": "ethereum",
   "devdoc": {
     "methods": {}
