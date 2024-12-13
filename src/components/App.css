@@ -11,13 +11,13 @@
 /*-----------------------------------------------------------------------  Sidebar  ---------------------------------------------------------------------------*/
 
 .sidebar {
-    width: 25%; /* Left sidebar */
+    width: 100%; /* Left sidebar */
     background-color: #ffffff; /* White background */
     padding: 20px 2px 0px 2px;
     position: fixed;
     top: 50px; /* Below header */
     left: 0;
-    height: 100vh; /* Full screen height */
+    height: 100%; /* Full screen height */
     z-index: 1; /* Ensure sidebar is above chat */
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Dramatic shadow */
     border-right: 1px solid #dcdcdc; /* Optional subtle border */
@@ -65,7 +65,7 @@
 
 /*-------------------------------------------------------------------------------Header-------------------------------------------------------------------- */
 .header {
-    background-color: #303e8a; /* Soft blue for sophistication */
+    background-color: #1E2A5E; /* Soft blue for sophistication */
     height: 70px; /* Small and compact height for the header */
     display: flex;
     flex-direction: row; /* Align items horizontally */
@@ -93,7 +93,7 @@
   .profile-info h2 {
     font-size: 1rem; /* Smaller font for a cute and sleek appearance */
     font-weight: bold;
-    color: white;
+    color: rgb(255, 255, 255);
     margin: 0;
     padding: 0;
     text-align: left; /* Align the username to the left */
@@ -103,7 +103,7 @@
   .buttons-container {
     display: flex;
     justify-content: flex-end; /* Align buttons to the right */
-    gap: 50px; /* Reduce space between buttons for compactness */
+    gap: 10px; /* Reduce space between buttons for compactness */
     align-items: center; /* Vertically center the buttons */
   }
 
@@ -151,7 +151,7 @@
     align-items: center;        /* Center-align both icon and text */
     justify-content: center;    /* Center content within the container */
     cursor: pointer;            /* Make the container clickable */
-    gap: 4px;                   /* Space between icon and text */
+                   /* Space between icon and text */
     color: white;               /* Ensure text color is white */
     transition: transform 0.2s ease; /* Add smooth hover effect */
 }
@@ -178,6 +178,44 @@
 }
 
 .all-contacts-container:hover .all-contacts-icon {
+    opacity: 0.8;               /* Slight transparency on hover */
+}
+
+
+/* Container for contacts icon and text */
+.profile-container {
+    display: flex;              /* Enable flexbox for alignment */
+    flex-direction: column;     /* Stack the icon and text vertically */
+    align-items: center;        /* Center-align both icon and text */
+    justify-content: center;    /* Center content within the container */
+    cursor: pointer;            /* Make the container clickable */
+    gap: 7px;                   /* Space between icon and text */
+    color: white;               /* Ensure text color is white */
+    transition: transform 0.2s ease; /* Add smooth hover effect */
+}
+
+/* Contacts Icon */
+.profile-icon {
+    width: 25px;                /* Set icon size */
+    height: 25px;               /* Ensure it's square */
+    filter: invert(1);          /* Make the icon white */
+    transition: transform 0.2s ease, opacity 0.3s ease; /* Smooth hover effects */
+}
+
+/* Contacts Text */
+.profile-text {
+    font-size: 12px;            /* Small text size */
+    font-weight: bold;          /* Make the text bold */
+    margin: 0;                  /* Remove default margin */
+    text-align: center;         /* Center-align the text */
+}
+
+/* Hover Effect */
+.profile-container:hover {
+    transform: scale(1.1);      /* Slight scaling on hover */
+}
+
+.profile-container:hover .profile-icon {
     opacity: 0.8;               /* Slight transparency on hover */
 }
 
@@ -212,7 +250,7 @@
   
   /*-------------------------------------------------------------------------------Chat container -------------------------------------------------------------------- */
   .chat-container {
-    margin-left: 25%; /* Space for sidebar */
+ 
     margin-top: 60px; /* Space for the fixed header */
     padding: 20px;
     display: flex;
@@ -234,20 +272,32 @@
     display: flex;
     
     flex-direction: column;
-    height: calc(100vh - 70px); /* Full viewport height minus the height of the header */
+    height: calc(100% - 70px); /* Full viewport height minus the height of the header */
     padding: 20px;
     overflow-y: auto;
     background-color: #ffffff;
     position: relative; /* Allows positioning of child elements */
 }
-/* Message Form */
+ul.messages {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* Styling for individual message sections (date + messages) */
+.message-section {
+    margin-bottom: 20px; /* Add spacing between date-message groups */
+}
+
+/* Date header styling */
+
 /* Message Form */
 .message-form {
     position: fixed;      /* Fixes the form to the bottom of the screen */
     bottom: 0;            /* Positions it at the bottom */
-    left: 26%;            /* Aligns it to the left with the same padding as .chat-window */
-    width: 73%;           /* 100% width minus the left and right padding */
-    padding: 10px;
+    left: 0%;            /* Aligns it to the left with the same padding as .chat-window */
+    width: 100%;           /* 100% width minus the left and right padding */
+    padding: 20px;
     background-color: #f8f9fa;
     display: flex;
     align-items: center;
@@ -262,7 +312,18 @@
     border: 1px solid #ccc;
     border-radius: 10px;
     font-size: 14px;
-    width: 100%;          /* Full width to ensure it stretches correctly */
+    width: 100%; 
+                     /* Set a fixed height */
+       /* Enable text wrapping and ensure the field expands vertically */
+       white-space: normal;             /* Allow text to wrap naturally */
+       word-wrap: break-word;           /* Ensure long words break and wrap to the next line */
+       
+       height: auto;                    /* Height adjusts based on content */
+       min-height: 40px;                /* Set a minimum height */
+       max-height: 200px;               /* Optionally, set a max height to limit the size */
+       overflow-y: auto;                /* Allow vertical scrolling if content exceeds max-height */
+       
+       resize: vertical;          /* Allow text to wrap naturally */
 }
 
 /* Message Input Focus Effect */
@@ -315,6 +376,23 @@
 /* Send Icon Active Effect */
 .send-icon:active {
     transform: scale(0.95); /* Slight shrink on click */
+}
+
+.profilemodal {
+    position: fixed;
+    top: 50px; /* Adjust distance below the profile icon */
+    right: 20px; /* Position near the right edge */
+    width: 300px; /* Compact width for the modal */
+    height: auto; /* Dynamic height based on content */
+    background-color: white; /* White background */
+    border: 1px solid #ccc; /* Subtle border */
+    border-radius: 8px; /* Rounded corners */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Depth effect */
+    z-index: 1000; /* Ensure visibility above other elements */
+    display: flex;
+    flex-direction: column; /* Align content vertically */
+    padding: 10px; /* Internal spacing for content */
+    overflow: hidden; /* Hide overflowing content */
 }
 
  /*------------------------------------------------------------------------------- Modal -------------------------------------------------------------------- */
@@ -390,9 +468,30 @@
 }
 
 /*------------------------------------------------------------------------------------------------------------------------------------------------*/
+ul.messages {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+}
 
+/* Style for each section grouping by date */
+.message-section {
+    margin-bottom: 20px;
+    padding-bottom: 20px; /* Adds some spacing at the bottom for each section */
+    display: block; /* Ensure that message sections are displayed as blocks */
+}
 
-  
+/* Style for the date header (to be displayed above each group of messages) */
+.date-header {
+
+    text-align: center;       /* Center-aligns the text */
+    font-size: 13px;          /* Sets a small text size */
+    color: #a3a1a1; 
+   padding-bottom: 2%;
+    
+}
   
 .messages {
     list-style: none;
@@ -409,7 +508,19 @@
     box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2), /* Main shadow */
                 0px 1px 10px rgba(0, 0, 0, 0.1); /* Lighter shadow for depth */
     transition: box-shadow 0.3s;
+    align-items: center;
+    display:flex;
+    justify-content: center; /* Horizontally center using flexbox */
+    /* Ensure text wraps and doesn't overflow */
+    word-wrap: break-word;  /* Wraps long words to the next line */
+    white-space: normal;    /* Ensures that the text wraps normally */
+    word-break: break-word; /* Forces long words or links to break and wrap into next line */
+    display: inline-block;  /* Makes sure the message container expands vertically as needed */
+    text-align: center;
+    /* Minimum width for the message box to be 5 characters */
+     /* 5 characters wide, plus some padding */
 }
+
 
 .message.sent:hover {
     box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.3),
@@ -454,14 +565,6 @@
     text-align: right;
 }
 
-.date-header {
-    text-align: center;       /* Center-aligns the text */
-    font-size: 12px;          /* Sets a small text size */
-    color: #aaa;              /* Light grey color for the text */
-          /* Adds vertical spacing around the header */
-           /* Optional: make it slightly more prominent */
-}
-
 
 
 /* Animations */
@@ -487,19 +590,5 @@
     }
 }
 
-/* Media Queries for Responsive Design */
-@media (min-width: 768px) {
-    .app {
-        flex-direction: row;
-    }
-
-    .sidebar {
-        width: 25%;
-    }
-
-    .chat-header{
-        width: 100%; 
-    }
-}
 
 

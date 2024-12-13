@@ -159,7 +159,7 @@ const getPasswordStrengthError = (password) => {
         <div className="login-container align">
             <div className="grid">
                 <div className="login-box">
-                    <h1 className="text--center">Chat App</h1>
+                    <h1 className="text--center">Secure Chat App</h1>
                     {!isRegistered ? (
                         <>
                             <h2 className="text--center">Sign Up</h2>
@@ -211,3 +211,4 @@ const getPasswordStrengthError = (password) => {
 };
 
 export default Home; 
+

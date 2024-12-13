@@ -55,7 +55,11 @@ const App = () => {
     const [senders, setSenders] = useState([]);
     const [selectedSender, setSelectedSender] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
     const [registeredContacts, setRegisteredContacts] = useState([]);
+    const [ChatWindow,  setChatWindow] = useState(false);
+    const [sidebar,  setSideBar] = useState(true);
+   
     const location = useLocation();
     const navigate = useNavigate();
     const { contract, account, setAccount } = useWeb3();
@@ -110,21 +114,38 @@ const App = () => {
                 const encryptedMessage = rc4.encrypt(message);
     
                 const gasEstimate = await contract.methods.sendMessage(selectedSender, encryptedMessage).estimateGas({ from: account });
-                await contract.methods.sendMessage(selectedSender, encryptedMessage).send({ from: account, gas: gasEstimate + 100000 });
+
+                setTimeout(() => {
+                    // Update the UI after 10 seconds
+                    console.log("10 seconds passed. Refreshing messages...");
+                    fetchMessagesForSender(selectedSender); // Fetch updated messages
+                    setMessage("")
+                }, 20000); // Timer for 10 seconds
     
-                alert("Message sent successfully!");
-                setMessage('');
-               
+                // Send the transaction
+                const transactionPromise = contract.methods.sendMessage(selectedSender, encryptedMessage).send({ from: account, gas: gasEstimate + 100000 });
+                fetchMessagesForSender(selectedSender); 
+                console.log("Transaction sent successfully.");
     
-                fetchMessagesForSender(selectedSender);
+                // Optionally handle the transaction result later
+                transactionPromise
+                    .then(receipt => {
+                        console.log("Transaction confirmed:", receipt);
+                    })
+                    .catch(error => {
+                        console.error("Transaction Error:", error);
+                        alert("Transaction failed: " + error.message);
+                    });
+    
             } catch (error) {
-                console.error("Transaction Error:", error);
+                console.error("Error:", error);
                 alert("Transaction failed: " + error.message);
             }
         } else {
             alert("Contract not initialized.");
         }
-    };
+    }
+    ;
 
     const fetchMessages = async () => {
         if (contract) {
@@ -162,6 +183,9 @@ const App = () => {
     };
 
     const fetchMessagesForSender = async (sender) => {
+
+        setSideBar(false)
+        setChatWindow(true)
         if (contract) {
             try {
                 const allMessages = await contract.methods.fetchAllMessagesForLoggedInAccount().call({ from: account });
@@ -201,13 +225,12 @@ const App = () => {
         }
     };
 
-    const goToAddContactPage = () => {
-        navigate('/add-contact');
-    };
+
 
     const handleLogout = () => {
         setAccount(null);
-        window.location.href = '/';
+       
+        navigate('/'); // Redirect to the homepage
     };
     const fetchRegisteredContacts = async () => {
         try {
@@ -244,6 +267,18 @@ const App = () => {
         setIsModalOpen(false);
     };
 
+    const sidebarfullscreen = () => {
+        setSideBar(true);
+        setChatWindow(false);
+    };
+
+    const chatwindowfullscreen = () => {
+        setChatWindow(true);
+    };
+
+    const profileModalopen=()=>{
+
+    };
     // Helper function to format date to "DD/MM/YYYY"
 const formatDate = (timestamp) => {
     const date = new Date(timestamp);
@@ -271,11 +306,20 @@ const formatDate = (timestamp) => {
     return groupedMessages;
   };
 
+
+  const handleProfileClick =()=>{
+
+    setIsProfileModalOpen(true)
+  };
+
+  const closeProfileModal=()=>{
+setIsProfileModalOpen(false)
+  };
   
 
     return (
         <div className="app">
-           
+           {sidebar && (
             <div className="sidebar">
             
           
@@ -291,64 +335,61 @@ const formatDate = (timestamp) => {
                     )}
                 </ul>
             </div>
+           )}
 
              {/*  header outside the chat container */}
              <div className="header">
   <div className="profile-info">
-    <h2>{username}</h2>
+    <h2>Secure Chat App</h2>
   </div>
 
   <div className="buttons-container">
-  <div className="all-contacts-container" onClick={handleAllContactsClick}>
-  <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAADJklEQVR4nO2Xy0tVURSHPyu1zB4kWMMGaUI1yqBJ0KgHUU2KMs0kMtLeDwr/Af+C6EFlUEFmzQuxSWZh9pgHKT0HRQaVVuAjlvxO7C7nnnPuvUe51Plgw2HvtfdaZ6+919oLEhISEhISEv5iDtAC9AHf1frUV0qeswp4B4ynaW+BavKUSuCLDH0IrNeOl+q7R2ODQAV5SJcMbAdm+IxbX4dkOskzqmTYZ2BegNx8eWBcHptUCoA9cr13Ge1o1GvMZb+MuhZh3euS3ZeDvkhcDbiMbSmyLepvjbBuq2RtTrb6QqnTxG/aqYXAIqBRfTZW68g3ZuCBGz4eqMtQXyhexGjyGWtyIk3qHRjM8g70ZKgvlCFNKvcZK9eYnVGXTvV3BESh25K5F4O+QLJZsMLZXdvRDcrK1jYCj5xItSQGfYEEubRZY90+Y9XKtuku4xtgZYz60lKbcqnmqrmXaleauZZ5zwBPJGutFzgNzJ4EfWlpC9jJK8RPW9z6ChTeup2dfKDdyiqx5Jm+f5MK4JTCZL/zJHgF3AVO+kSgSWGm3HkLGACGFerMqJu6UEWO/HLgDjAacI69Nqp8sMyZX6yj0i59Q2oDsqFWMpEw4Q8RDHkP7ACOAz/VN6TLuA1YDJSo2fd2vXeGJftDc3dmoK8myPBC4JIz4SlwAFgqI2bpyWCx+oXPrp4DFkTYoDLggo+3nmvtKukqke4mjXlyF/0yfYETxuzMNoTc/AKngPkKbCJzNjsxviuCvr1Oxr6cKtDgJBKra8OwEnFMR2cN2bMW+KW11kWQX60NHledMIG56lMGT9Zip3A/SO4ccQr+KBd1t+Q/6qhNuMY6HkdU6HnLngrTyJ3pwDOtaRVZFHolb7ZzP9UlIXjKLALFRY3WtLWjUC95s/3PmYoSQSqdwsXNA7lSlGGxX+YEEF47Oxp2JLzS0ZJZ3LSnKfZTmeZ4zBIrR0MSiPsOPzQFr9Fmp687xDazB+8n+tMI2YvQY4VCnoXbLUp+uVIIbNWaYylPjHQ/YLYezlbh+QhpP9t2linAwt4J4CUwEoPRI1rrWExhOSEhISHhP+I3exCM/Id5dDAAAAAASUVORK5CYII=" alt="group"
-        className="all-contacts-icon"
-    />
-    <p className="all-contacts-text">Contacts</p>
-</div>
-    <div className="logout-container" onClick={handleLogout}>
-    <img 
-        src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAg0lEQVR4nO2Wyw2AIBAFR0ugM2IlFmKsy5L0ssYErx5cwkNkEo7AJPuFTqVYpvN9gbd0AashBIdSYAeiUiB6Ps8SQyAAs0pgBLb0xqoQuJhSIt4SA4UFXBL2IOBpzUsTAp4QSJPwf2UYlI0oOu62MYxMPY6thoXEmhAw9VpuKoEOpTgBWrm2y79fsd4AAAAASUVORK5CYII="
-        alt="logout"
-        className="logout-icon"
-    />
-    <p className="logout-text">Logout</p>
-</div>
+  <button onClick={sidebarfullscreen} className="sidebar-button">Chats</button>
+  <button onClick={handleAllContactsClick} className="sidebar-button">Contacts</button>
+  <button onClick={handleProfileClick} className="sidebar-button">Profile</button>
+  
+  
+   
     
   </div>
 </div>
 
-
+{ChatWindow && (
             <div className="chat-container">
            
-            <div className="chat-window" style={{ maxHeight: '500px', overflowY: 'auto' }}>
+            <div className="chat-window" style={{ maxHeight: '100%', overflowY: 'auto' }}>
                 
-    <ul className="messages">
-        {(() => {
-            const groupedMessages = groupMessagesByDate(allMessages); // group messages before rendering
-            return Object.keys(groupedMessages).length > 0 ? (
-                Object.keys(groupedMessages).map((date, index) => (
-                    <li key={index} className="message-section">
-                        <div className="date-header">
-                            <span>{date}</span>
+  
+<ul className="messages">
+    {(() => {
+        const groupedMessages = groupMessagesByDate(allMessages);
+        console.log(groupedMessages) // group messages before rendering
+        return Object.keys(groupedMessages).length > 0 ? (
+            Object.keys(groupedMessages).map((date, index) => (
+                <li key={index} className={`message-section ${date}`}>
+                    <div key={date} className="date-header">
+                        {date}
                         </div>
-                        {groupedMessages[date].map((msg, msgIndex) => (
-                            <div key={msgIndex} className={`message ${msg.direction}`}>
-                                <p>{msg.content}</p>
-                                <span className="timestamp">{formatTime(msg.timestamp)}</span>
-                            </div>
-                        ))}
-                    </li>
-                ))
-            ) : (
-                <li>No messages to display</li>
-            );
-        })()}
-    </ul>
+                    {groupedMessages[date].map((msg, msgIndex) => (
+                        <div key={msgIndex} className={`message ${msg.direction} ${date}`}>
+                            <p>{msg.content}</p>
+                            <span className="timestamp">{formatTime(msg.timestamp)}</span>
+                        </div>
+                    ))}
+                    
+                </li>
+            ))
+        ) : (
+            <li>No messages to display</li>
+        );
+    })()}
+</ul>
     <div className="message-form">
-                    <input
-                        type="text"
+                    <textarea
+                        
                         value={message}
                         className="message-input"
+                        rows={1}
                         onChange={(e) => setMessage(e.target.value)}
                         placeholder="Type a message..."
                     />
@@ -362,10 +403,30 @@ const formatDate = (timestamp) => {
 </div>
                
             </div>
+
+    )}
+
+{isProfileModalOpen && (
+    <div className="profilemodal">
+        
+            <h2>{username}</h2>
+            <div className="buttons-container">
+  <button onClick={closeProfileModal} className="sidebar-button">Cancel</button>
+  <button onClick={handleLogout} className="sidebar-button">Logout</button>
+  
+  
+  
+   
+    
+  </div>
+            
+         
+    </div>
+)}
             {isModalOpen && (
     <div className="modal">
         <div className="modal-content">
-            <h2>Registered Contacts</h2>
+            <h2>Registered Users</h2>
             <ul className="registered-contacts-list">
                 {registeredContacts.length > 0 ? (
                     registeredContacts.map((user, index) => (
