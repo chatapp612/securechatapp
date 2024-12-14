@@ -69,13 +69,22 @@ const App = () => {
 
    
     useEffect(() => {
-if(contract && account)
-{
-    fetchMessages();
-}
-       
-       
-    }, [contract, account]); // Dependencies include `selectedSender`
+        // Poll based on whether the chat window is open or not
+        const pollMessages = async () => {
+            if (ChatWindow && selectedSender) {
+                // Fetch messages for the selected sender
+                await fetchMessagesForSender(selectedSender);
+            } else {
+                // Fetch general messages
+                await fetchMessages();
+            }
+        };
+
+        const intervalId = setInterval(pollMessages, 5000); // Poll every 5 seconds
+
+        // Cleanup polling on unmount
+        return () => clearInterval(intervalId);
+    }, [ChatWindow, selectedSender]);  // Dependencies include `selectedSender`
     
 
    
@@ -139,7 +148,7 @@ console.log(sessionKeyHex)
                 fetchMessagesForSender(selectedSender); // Fetch messages for selected sender
                 fetchMessages(); // Fetch all messages
             }, 20000); 
-
+            fetchMessagesForSender(selectedSender); 
             setMessage('');
             // Send the transaction after the timeout setup
             const transactionPromise = contract.methods.sendMessage(selectedSender, encryptedMessage).send({ from: account, gas: gasEstimate + 100000 });
