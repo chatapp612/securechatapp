@@ -14,7 +14,7 @@ module.exports = {
         mnemonic: {
           phrase: "liar save element move uncover census wife picture spread dog art tornado" // Replace with your actual mnemonic
         },
-        providerOrUrl: "wss://volta-rpc.energyweb.org/ws",
+        providerOrUrl: "https://volta-rpc.energyweb.or",
         pollingInterval: 27000, 
         timeoutBlocks: 270,
       }),
