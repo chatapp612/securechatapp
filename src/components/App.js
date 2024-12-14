@@ -69,22 +69,25 @@ const App = () => {
 
    
     useEffect(() => {
-        // Poll based on whether the chat window is open or not
-        const pollMessages = async () => {
-            if (ChatWindow && selectedSender) {
-                // Fetch messages for the selected sender
-                await fetchMessagesForSender(selectedSender);
-            } else {
-                // Fetch general messages
-                await fetchMessages();
-            }
-        };
+        // Check if contract and account are initialized before polling
+        if (contract && account) {
+            // Poll based on whether the chat window is open or not
+            const pollMessages = async () => {
+                if (chatWindowOpen && selectedSender) {
+                    // Fetch messages for the selected sender
+                    await fetchMessagesForSender(selectedSender);
+                } else {
+                    // Fetch general messages
+                    await fetchMessages();
+                }
+            };
 
-        const intervalId = setInterval(pollMessages, 5000); // Poll every 5 seconds
+            const intervalId = setInterval(pollMessages, 5000); // Poll every 5 seconds
 
-        // Cleanup polling on unmount
-        return () => clearInterval(intervalId);
-    }, [ChatWindow, selectedSender]);  // Dependencies include `selectedSender`
+            // Cleanup polling on unmount
+            return () => clearInterval(intervalId);
+        }
+    }, [contract, account, chatWindowOpen, selectedSender]);  // Dependencies include `selectedSender`
     
 
    
