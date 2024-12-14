@@ -1,9 +1,9 @@
 {
   "homepage": "https://chatapp612.github.io/encryptiontest",
-  "name": "Secure Chat App",
+  "name": "secure-chatapp",
   "version": "0.1.0",
   "description": "Secure chat application",
-  
+ 
   "dependencies": {
     "@truffle/hdwallet-provider": "^2.1.15",
     "babel-polyfill": "6.26.0",
