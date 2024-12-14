@@ -45,7 +45,7 @@ const Home = () => {
                 setIsRegistered(false);
             }
         } catch (error) {
-            console.error("Error checking registration status:", error);
+          
             setError("Failed to check registration status.");
         }
     };
@@ -59,12 +59,12 @@ const Home = () => {
 
         //elliptic curve cryptography (ECC) based on the Curve25519 curve
         const keyPair = sodium.crypto_kx_keypair();
-        console.log("keypairs generated");
+      
         const publicKeyHex = sodium.to_hex(keyPair.publicKey);
         const privateKeyHex = sodium.to_hex(keyPair.privateKey);
 
         localStorage.setItem(`privateKey-${account}`, privateKeyHex);
-        console.log(`Private key for ${account} stored in local storage!`);
+      
 
         
 
@@ -94,11 +94,11 @@ const Home = () => {
             const transactionPromise1=  contract.methods.registerUser(username, publicKeyHex, password).send({ from: account });
           
 
-            console.log("Transaction sent successfully.");
+         
            
             setTimeout(() => {
                 // Update the UI after 10 seconds
-                console.log("10 seconds passed. Refreshing messages...");
+              
                
                 
             }, 20000);
@@ -107,10 +107,10 @@ const Home = () => {
             // Optionally handle the transaction result later
             transactionPromise1
                 .then(receipt => {
-                    console.log("Transaction confirmed:", receipt);
+                  
                 })
                 .catch(error => {
-                    console.error("Transaction Error:", error);
+                   
                     alert("Transaction failed: " + error.message);
                 });
 
@@ -118,7 +118,7 @@ const Home = () => {
 
            
         } catch (error) {
-            console.error("Registration error:", error);
+           
             setError("Registration failed. Please try again.");
         }
     };
@@ -138,14 +138,14 @@ const Home = () => {
             const passwordValid = hashedPassword === storedHashedPassword;
 
             if (passwordValid) {
-                console.log("Password is valid. User login successful.");
+              
                 setCurrentUsername(username);
                 navigate('/app', { state: { account, username } });
             } else {
                 setError('Invalid password');
             }
         } catch (error) {
-            console.error("Login error:", error);
+         
             setError("Login failed. Please try again.");
         }
     };

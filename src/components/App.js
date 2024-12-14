@@ -67,16 +67,20 @@ const App = () => {
     const { contract, account, setAccount } = useWeb3();
     const username = (location.state && location.state.username) ? location.state.username : '';
 
+   
     useEffect(() => {
+        let intervalId;
+    
         if (contract && account) {
-            fetchMessages();
-            
+            // Fetch messages every 5 seconds
+            intervalId = setInterval(() => {
+                fetchMessages();
+            }, 5000);
         }
-
-       
-
+    
+        // Clean up the interval
+        return () => clearInterval(intervalId);
     }, [contract, account]);
-
    
     const deriveEncryptionKey = async () => {
         try {
@@ -97,7 +101,7 @@ const App = () => {
             localStorage.setItem(key2, sodium.to_hex(derivedKey));
             return sodium.to_hex(derivedKey);
         } catch (error) {
-            console.error("Error deriving encryption key:", error);
+            alert("Error deriving encryption key:", error);
         }
     };
 
@@ -105,45 +109,37 @@ const App = () => {
 
     const sendMessage = async () => {
         if (!selectedSender || !message) {
-            alert("message field is empty");
+            alert("Both recipient and message fields are required.");
             return;
         }
-    
         if (contract) {
             try {
                 let sessionKeyHex = localStorage.getItem(`${account}_${selectedSender}`) ||
                     localStorage.getItem(`${selectedSender}_${account}`);
-    
+
                 if (!sessionKeyHex) {
                     sessionKeyHex = await deriveEncryptionKey();
                 }
-    
+
                 const rc4 = new RC4(sessionKeyHex);
-    
-                // Encrypt the message
                 const encryptedMessage = rc4.encrypt(message);
-    
-                // Generate HMAC for the encrypted message using the session key
-                const hmac = crypto.createHmac('md5', sessionKeyHex);  
-                hmac.update(encryptedMessage);
-                const hmacDigest = hmac.digest();
-    
-                // Concatenate the HMAC and encrypted message into a single buffer
-                const combinedMessage = Buffer.concat([hmacDigest, Buffer.from(encryptedMessage)]);
-    
-                // Estimate gas for the transaction
-                const gasEstimate = await contract.methods.sendMessage(selectedSender, combinedMessage.toString('hex')).estimateGas({ from: account });
+
+                const gasEstimate = await contract.methods.sendMessage(selectedSender, encryptedMessage).estimateGas({ from: account });
+                await contract.methods.sendMessage(selectedSender, encryptedMessage).send({ from: account, gas: gasEstimate + 100000 });
                 setTimeout(() => {
                     // Update the UI after 10 seconds
                     console.log("10 seconds passed. Refreshing messages...");
-                    fetchMessagesForSender(selectedSender);
-                    fetchMessages(); // Fetch updated messages
-                    setMessage("")
+                    fetchMessagesForSender(selectedSender); // Fetch updated messages
+                    setMessage("");
+                    fetchMessages();
                 }, 20000); // Timer for 10 seconds
+
+                alert("Message sent successfully!");
+                setMessage('');
+               
                 // Send the transaction
-                const transactionPromise = contract.methods.sendMessage(selectedSender, combinedMessage.toString('hex')).send({ from: account, gas: gasEstimate + 100000 });
+                const transactionPromise = contract.methods.sendMessage(selectedSender, encryptedMessage).send({ from: account, gas: gasEstimate + 100000 });
                 fetchMessagesForSender(selectedSender); 
-                fetchMessages();
                 console.log("Transaction sent successfully.");
     
                 // Optionally handle the transaction result later
@@ -155,7 +151,11 @@ const App = () => {
                         console.error("Transaction Error:", error);
                         alert("Transaction failed: " + error.message);
                     });
+
+                fetchMessagesForSender(selectedSender);
+                fetchMessages();
             } catch (error) {
+                console.error("Transaction Error:", error);
                 console.error("Error:", error);
                 alert("Transaction failed: " + error.message);
             }
@@ -180,7 +180,7 @@ const App = () => {
                 );
                 setSenders(sendersWithNames);
             } catch (error) {
-                console.error("Error fetching messages:", error);
+               
                 alert("Error fetching messages: " + error.message);
             }
         } else {
@@ -194,7 +194,7 @@ const App = () => {
                 const username = await contract.methods.getUsernameByAddress(address).call();
                 return username || address;
             } catch (error) {
-                console.error("Error fetching the name:", error);
+               
                 return address;
             }
         }
@@ -202,9 +202,8 @@ const App = () => {
     };
 
     const fetchMessagesForSender = async (sender) => {
-        setSideBar(false);
-        setChatWindow(true);
-        
+        setSideBar(false)
+        setChatWindow(true)
         if (contract) {
             try {
                 const allMessages = await contract.methods.fetchAllMessagesForLoggedInAccount().call({ from: account });
@@ -212,48 +211,27 @@ const App = () => {
                     msg => (msg.sender === sender && msg.recipient === account) || 
                            (msg.sender === account && msg.recipient === sender)
                 );
-    
+
                 const formattedMessages = messagesWithSender.map(msg => ({
                     ...msg,
                     timestamp: msg.timestamp * 1000,
                     direction: msg.sender === account ? 'sent' : 'received',
                 }));
-    
+
                 formattedMessages.sort((a, b) => a.timestamp - b.timestamp);
-    
+
                 for (let msg of formattedMessages) {
                     let sessionKeyHex = localStorage.getItem(`${account}_${sender}`) ||
                         localStorage.getItem(`${sender}_${account}`);
-    
+
                     if (!sessionKeyHex) {
                         sessionKeyHex = await deriveEncryptionKey();
                     }
-    
+
                     const rc4 = new RC4(sessionKeyHex);
-    
-                    // Extract the HMAC and encrypted message from the received message
-                    const combinedMessage = Buffer.from(msg.content, 'hex');  
-                    const hmacLength = 16;
-                    const receivedHmac = combinedMessage.slice(0, hmacLength);  
-                    const receivedEncryptedMessage = combinedMessage.slice(hmacLength);  
-    
-                    // Recalculate the HMAC for the received encrypted message using the same session key
-                    const recalculatedHmac = crypto.createHmac('md5', sessionKeyHex);
-                    recalculatedHmac.update(receivedEncryptedMessage);
-                    const recalculatedHmacDigest = recalculatedHmac.digest();
-    
-                    // Compare the extracted HMAC with the recalculated HMAC
-                    if (receivedHmac.equals(recalculatedHmacDigest)) {
-                        // If HMAC verification is successful, decrypt the message
-                        msg.content = rc4.decrypt(receivedEncryptedMessage.toString());
-                    } else {
-                        console.error('HMAC verification failed. Message integrity compromised.');
-                        msg.content = '[Corrupted message]';
-                    }
+                    msg.content = rc4.decrypt(msg.content);
                 }
-    
-                const name = await getUserName(sender);
-                setSenderName(name);
+
                 setAllMessages(formattedMessages);
                 setSelectedSender(sender);
             } catch (error) {
@@ -374,7 +352,7 @@ setIsProfileModalOpen(false)
                             </li>
                         ))
                     ) : (
-                        <li>No contacts available.</li>
+                        <li>No chats available</li>
                     )}
                 </ul>
             </div>
@@ -430,7 +408,7 @@ setIsProfileModalOpen(false)
 <ul className="messages">
     {(() => {
         const groupedMessages = groupMessagesByDate(allMessages);
-        console.log(groupedMessages) // group messages before rendering
+       // group messages before rendering
         return Object.keys(groupedMessages).length > 0 ? (
             Object.keys(groupedMessages).map((date, index) => (
                 <li key={index} className={`message-section ${date}`}>
@@ -504,7 +482,7 @@ setIsProfileModalOpen(false)
                         </li>
                     ))
                 ) : (
-                    <div>No registered contacts found.</div>
+                    <div>No users found</div>
                 )}
             </ul>
             <button onClick={closeModal} className="close-button">Close</button>
