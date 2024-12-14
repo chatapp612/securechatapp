@@ -69,14 +69,38 @@ const App = () => {
 
    
     useEffect(() => {
-        if (contract && account) {
-            fetchMessages();
-            
-        }
-
+if(contract && account)
+{
+    fetchMessages();
+}
        
-
-    }, [contract, account]);
+        let isMounted = true; // Flag to track if the component is still mounted
+        let timeoutId; // Timeout ID for clearing setTimeout
+    
+        const pollMessages = async () => {
+            if (contract && account && selectedSender && isMounted) {
+                try {
+                    // Fetch messages only for the selected sender
+                    await fetchMessagesForSender(selectedSender);
+    
+                    // Schedule the next poll
+                    timeoutId = setTimeout(pollMessages, 5000);
+                } catch (error) {
+                    console.error("Error polling messages for sender:", error);
+                }
+            }
+        };
+    
+        if (selectedSender) {
+            pollMessages(); // Start polling if a sender is selected
+        }
+    
+        return () => {
+            isMounted = false; // Cleanup: stop polling on unmount
+            clearTimeout(timeoutId); // Clear any pending timeout when component or effect unmounts
+        };
+    }, [contract, account, selectedSender]); // Dependencies include `selectedSender`
+    
 
    
     const deriveEncryptionKey = async () => {
@@ -127,7 +151,7 @@ const App = () => {
                     // Update the UI after 10 seconds
                     console.log("10 seconds passed. Refreshing messages...");
                     fetchMessagesForSender(selectedSender); // Fetch updated messages
-                    setMessage("");
+                   
                     fetchMessages();
                 }, 20000); 
 
@@ -291,6 +315,7 @@ const App = () => {
     };
 
     const sidebarfullscreen = () => {
+        setSelectedSender(null)
         setSideBar(true);
         setChatWindow(false);
     };
