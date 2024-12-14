@@ -10803,12 +10803,12 @@
     "73799": {
       "events": {},
       "links": {},
-      "address": "0x798f85BA5820A01CAC92428eE0658cD46E4e5699",
-      "transactionHash": "0x92d404cf017453421c3ad4893f19adfa82d69208a480bfae13e85899b16ecb9f"
+      "address": "0x59565f4eE9ca145C5Efe2834fe610746214D67a2",
+      "transactionHash": "0xb9ec5bba21fba1bac343c0bbfb26cbdd553a09a8cc3fe661d4aab3821e1d12c1"
     }
   },
   "schemaVersion": "3.4.16",
-  "updatedAt": "2024-12-14T16:23:03.063Z",
+  "updatedAt": "2024-12-14T16:27:26.255Z",
   "networkType": "ethereum",
   "devdoc": {
     "methods": {}
