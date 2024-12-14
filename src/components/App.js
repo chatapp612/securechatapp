@@ -134,9 +134,9 @@ const App = () => {
                     fetchMessages();
                 }, 20000); // Timer for 10 seconds
 
-                alert("Message sent successfully!");
+              
                 setMessage('');
-               
+                fetchMessagesForSender(selectedSender); 
                 // Send the transaction
                 const transactionPromise = contract.methods.sendMessage(selectedSender, encryptedMessage).send({ from: account, gas: gasEstimate + 100000 });
                 fetchMessagesForSender(selectedSender); 
@@ -232,6 +232,8 @@ const App = () => {
                     msg.content = rc4.decrypt(msg.content);
                 }
 
+                const name = await getUserName(sender);
+                setSenderName(name);
                 setAllMessages(formattedMessages);
                 setSelectedSender(sender);
             } catch (error) {
