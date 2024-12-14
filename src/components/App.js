@@ -152,7 +152,7 @@ const App = () => {
                         alert("Transaction failed: " + error.message);
                     });
 
-                fetchMessagesForSender(selectedSender);
+               
                 fetchMessages();
             } catch (error) {
                 console.error("Transaction Error:", error);
