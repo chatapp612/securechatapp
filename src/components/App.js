@@ -81,16 +81,23 @@ if(contract && account)
    
     const deriveEncryptionKey = async () => {
         try {
+            console.log("r1");
+            console.log(selectedSender)
             const recipientPublicKeyHex = await contract.methods.getPublicKey(selectedSender).call({ from: account });
+            console.log("r2");
             const privateKeyHex = localStorage.getItem(`privateKey-${account}`);
+            console.log("r3");
             if (!privateKeyHex) {
                 throw new Error("Private key not found in localStorage.");
             }
-
+            console.log("r4");
             const recipientPublicKey = sodium.from_hex(recipientPublicKeyHex);
+            console.log("r5");
             const privateKey = sodium.from_hex(privateKeyHex);
+            console.log("r6");
             const rawSecret = sodium.crypto_scalarmult(privateKey, recipientPublicKey);
             //BLAKE2B-subkeylen(key=key, message={}, salt=subkey_id || {0}, personal=ctx || {0})
+            console.log("r7");
             const derivedKey = sodium.crypto_kdf_derive_from_key(32, 1, 'encryption', rawSecret);
             const key1 = `${account}_${selectedSender}`;
             const key2 = `${selectedSender}_${account}`;
@@ -117,7 +124,8 @@ if(contract && account)
                 if (!sessionKeyHex) {
                     sessionKeyHex = await deriveEncryptionKey();
                 }
-
+console.log("stored successfully")
+console.log(sessionKeyHex)
                 const rc4 = new RC4(sessionKeyHex);
                 const encryptedMessage = rc4.encrypt(message);
 
@@ -126,8 +134,8 @@ if(contract && account)
                 setTimeout(() => {
                     // Update the UI after 10 seconds
                     console.log("10 seconds passed. Refreshing messages...");
-                    fetchMessagesForSender(selectedSender); // Fetch updated messages
-                   
+                   // Fetch updated messages
+                   fetchMessagesForSender(selectedSender)
                     fetchMessages();
                 }, 20000); 
 
@@ -136,10 +144,10 @@ if(contract && account)
 
               
                 setMessage('');
-                fetchMessagesForSender(selectedSender);
+               
                 fetchMessages();
                 // Send the transaction
-                fetchMessagesForSender(selectedSender);
+            
                 const transactionPromise = contract.methods.sendMessage(selectedSender, encryptedMessage).send({ from: account, gas: gasEstimate + 100000 });
                 fetchMessagesForSender(selectedSender); 
                 console.log("Transaction sent successfully.");
@@ -204,11 +212,17 @@ if(contract && account)
     };
 
     const fetchMessagesForSender = async (sender) => {
+        console.log("1");
         setSideBar(false)
         setChatWindow(true)
+        console.log(sender)
+        setSelectedSender(sender);
+        console.log("1");
         if (contract) {
             try {
+                console.log("in fms after try");
                 const allMessages = await contract.methods.fetchAllMessagesForLoggedInAccount().call({ from: account });
+                console.log("after try try");
                 const messagesWithSender = allMessages.filter(
                     msg => (msg.sender === sender && msg.recipient === account) || 
                            (msg.sender === account && msg.recipient === sender)
@@ -223,10 +237,13 @@ if(contract && account)
                 formattedMessages.sort((a, b) => a.timestamp - b.timestamp);
 
                 for (let msg of formattedMessages) {
+                    console.log(sender)
+
                     let sessionKeyHex = localStorage.getItem(`${account}_${sender}`) ||
                         localStorage.getItem(`${sender}_${account}`);
 
                     if (!sessionKeyHex) {
+                        console.log("before derivekey");
                         sessionKeyHex = await deriveEncryptionKey();
                     }
 
@@ -280,9 +297,10 @@ if(contract && account)
     };
 
     const handleContactClick = async (user) => {
+       
         setSelectedSender(user.address); // Set the selected sender's address
-        closeModal(); // Close the modal after selecting a contact
-        
+         closeModal(); // Close the modal after selecting a contact
+     
         // Fetch chat history for the selected sender
         await fetchMessagesForSender(user.address);
     };
@@ -293,7 +311,7 @@ if(contract && account)
     };
 
     const sidebarfullscreen = () => {
-        setSelectedSender(null)
+       
         setSideBar(true);
         setChatWindow(false);
     };
@@ -352,6 +370,7 @@ setIsProfileModalOpen(false)
                 <ul className="senders-list">
                     {senders.length > 0 ? (
                         senders.map((senderObj, index) => (
+                          
                             <li key={index} onClick={() => fetchMessagesForSender(senderObj.address)} className={selectedSender === senderObj.address ? 'selected' : ''}>
                                 <span>{senderObj.name}</span>
                             </li>
