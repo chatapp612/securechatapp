@@ -103,6 +103,7 @@ if(contract && account)
             const key2 = `${selectedSender}_${account}`;
             localStorage.setItem(key1, sodium.to_hex(derivedKey));
             localStorage.setItem(key2, sodium.to_hex(derivedKey));
+            console.log(derivedKey)
             return sodium.to_hex(derivedKey);
         } catch (error) {
             alert("Error deriving encryption key:", error);
@@ -131,39 +132,29 @@ console.log(sessionKeyHex)
 
                 const gasEstimate = await contract.methods.sendMessage(selectedSender, encryptedMessage).estimateGas({ from: account });
 
-                setTimeout(() => {
-                    // Update the UI after 10 seconds
-                    console.log("10 seconds passed. Refreshing messages...");
-                   // Fetch updated messages
-                   fetchMessagesForSender(selectedSender)
-                    fetchMessages();
-                }, 20000); 
+                // Move fetchMessages out of the main execution flow
+            setTimeout(() => {
+                // Update the UI after 20 seconds
+                console.log("20 seconds passed. Refreshing messages...");
+                fetchMessagesForSender(selectedSender); // Fetch messages for selected sender
+                fetchMessages(); // Fetch all messages
+            }, 20000); 
 
-               
-              // Timer for 10 seconds
+            setMessage('');
+            // Send the transaction after the timeout setup
+            const transactionPromise = contract.methods.sendMessage(selectedSender, encryptedMessage).send({ from: account, gas: gasEstimate + 100000 });
+            fetchMessagesForSender(selectedSender); 
+            // Handle the transaction result
+            transactionPromise
+                .then(receipt => {
+                    console.log("Transaction confirmed:", receipt);
+                })
+                .catch(error => {
+                    console.error("Transaction Error:", error);
+                    alert("Transaction failed: " + error.message);
+                });
 
-              
-                setMessage('');
-               
-                fetchMessages();
-                // Send the transaction
-            
-                const transactionPromise = contract.methods.sendMessage(selectedSender, encryptedMessage).send({ from: account, gas: gasEstimate + 100000 });
-                fetchMessagesForSender(selectedSender); 
-                console.log("Transaction sent successfully.");
-                fetchMessagesForSender(selectedSender);
-                // Optionally handle the transaction result later
-                transactionPromise
-                    .then(receipt => {
-                        console.log("Transaction confirmed:", receipt);
-                    })
-                    .catch(error => {
-                        console.error("Transaction Error:", error);
-                        alert("Transaction failed: " + error.message);
-                    });
-
-               
-                fetchMessages();
+            console.log("Transaction sent successfully.");
             } catch (error) {
                 console.error("Transaction Error:", error);
                 console.error("Error:", error);
@@ -238,13 +229,17 @@ console.log(sessionKeyHex)
 
                 for (let msg of formattedMessages) {
                     console.log(sender)
-
+                    console.log(sender)
+                    console.log(account, sender);
+                    console.log(msg.content);
                     let sessionKeyHex = localStorage.getItem(`${account}_${sender}`) ||
                         localStorage.getItem(`${sender}_${account}`);
-
+                        console.log(sender)
+                        console.log("xyz",sessionKeyHex)
                     if (!sessionKeyHex) {
                         console.log("before derivekey");
                         sessionKeyHex = await deriveEncryptionKey();
+
                     }
 
                     const rc4 = new RC4(sessionKeyHex);
