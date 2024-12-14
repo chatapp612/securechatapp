@@ -74,32 +74,8 @@ if(contract && account)
     fetchMessages();
 }
        
-        let isMounted = true; // Flag to track if the component is still mounted
-        let timeoutId; // Timeout ID for clearing setTimeout
-    
-        const pollMessages = async () => {
-            if (contract && account && selectedSender && isMounted) {
-                try {
-                    // Fetch messages only for the selected sender
-                    await fetchMessagesForSender(selectedSender);
-    
-                    // Schedule the next poll
-                    timeoutId = setTimeout(pollMessages, 5000);
-                } catch (error) {
-                    console.error("Error polling messages for sender:", error);
-                }
-            }
-        };
-    
-        if (selectedSender) {
-            pollMessages(); // Start polling if a sender is selected
-        }
-    
-        return () => {
-            isMounted = false; // Cleanup: stop polling on unmount
-            clearTimeout(timeoutId); // Clear any pending timeout when component or effect unmounts
-        };
-    }, [contract, account, selectedSender]); // Dependencies include `selectedSender`
+       
+    }, [contract, account]); // Dependencies include `selectedSender`
     
 
    
@@ -160,12 +136,14 @@ if(contract && account)
 
               
                 setMessage('');
-                fetchMessagesForSender(selectedSender); 
+                fetchMessagesForSender(selectedSender);
+                fetchMessages();
                 // Send the transaction
+                fetchMessagesForSender(selectedSender);
                 const transactionPromise = contract.methods.sendMessage(selectedSender, encryptedMessage).send({ from: account, gas: gasEstimate + 100000 });
                 fetchMessagesForSender(selectedSender); 
                 console.log("Transaction sent successfully.");
-    
+                fetchMessagesForSender(selectedSender);
                 // Optionally handle the transaction result later
                 transactionPromise
                     .then(receipt => {
