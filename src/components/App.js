@@ -69,18 +69,15 @@ const App = () => {
 
    
     useEffect(() => {
-        let intervalId;
-    
         if (contract && account) {
-            // Fetch messages every 5 seconds
-            intervalId = setInterval(() => {
-                fetchMessages();
-            }, 5000);
+            fetchMessages();
+            
         }
-    
-        // Clean up the interval
-        return () => clearInterval(intervalId);
+
+       
+
     }, [contract, account]);
+
    
     const deriveEncryptionKey = async () => {
         try {
@@ -125,14 +122,16 @@ const App = () => {
                 const encryptedMessage = rc4.encrypt(message);
 
                 const gasEstimate = await contract.methods.sendMessage(selectedSender, encryptedMessage).estimateGas({ from: account });
-                await contract.methods.sendMessage(selectedSender, encryptedMessage).send({ from: account, gas: gasEstimate + 100000 });
+
                 setTimeout(() => {
                     // Update the UI after 10 seconds
                     console.log("10 seconds passed. Refreshing messages...");
                     fetchMessagesForSender(selectedSender); // Fetch updated messages
                     setMessage("");
                     fetchMessages();
-                }, 20000); // Timer for 10 seconds
+                }, 20000); 
+                await contract.methods.sendMessage(selectedSender, encryptedMessage).send({ from: account, gas: gasEstimate + 100000 });
+              // Timer for 10 seconds
 
               
                 setMessage('');
