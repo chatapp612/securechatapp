@@ -73,7 +73,7 @@ const App = () => {
         if (contract && account) {
             // Poll based on whether the chat window is open or not
             const pollMessages = async () => {
-                if (chatWindowOpen && selectedSender) {
+                if (ChatWindow && selectedSender) {
                     // Fetch messages for the selected sender
                     await fetchMessagesForSender(selectedSender);
                 } else {
@@ -87,7 +87,7 @@ const App = () => {
             // Cleanup polling on unmount
             return () => clearInterval(intervalId);
         }
-    }, [contract, account, chatWindowOpen, selectedSender]);  // Dependencies include `selectedSender`
+    }, [contract, account, ChatWindow , selectedSender]);  // Dependencies include `selectedSender`
     
 
    
