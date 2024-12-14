@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
+import Home from './Home';
 import { useNavigate } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
 import { useWeb3 } from '../contexts/Web3Context.js';
@@ -50,6 +51,7 @@ class RC4 {
 }
 
 const App = () => {
+    const { logout } = useWeb3();
     const [message, setMessage] = useState('');
     const [allMessages, setAllMessages] = useState([]);
     const [senders, setSenders] = useState([]);
@@ -59,7 +61,7 @@ const App = () => {
     const [registeredContacts, setRegisteredContacts] = useState([]);
     const [ChatWindow,  setChatWindow] = useState(false);
     const [sidebar,  setSideBar] = useState(true);
-   
+    const [senderName, setSenderName] = useState(null);
     const location = useLocation();
     const navigate = useNavigate();
     const { contract, account, setAccount } = useWeb3();
@@ -68,7 +70,10 @@ const App = () => {
     useEffect(() => {
         if (contract && account) {
             fetchMessages();
+            
         }
+
+       
 
     }, [contract, account]);
 
@@ -96,11 +101,14 @@ const App = () => {
         }
     };
 
+    const crypto = require('crypto');
+
     const sendMessage = async () => {
         if (!selectedSender || !message) {
-            alert("Both recipient and message fields are required.");
+            alert("message field is empty");
             return;
         }
+    
         if (contract) {
             try {
                 let sessionKeyHex = localStorage.getItem(`${account}_${selectedSender}`) ||
@@ -111,20 +119,31 @@ const App = () => {
                 }
     
                 const rc4 = new RC4(sessionKeyHex);
+    
+                // Encrypt the message
                 const encryptedMessage = rc4.encrypt(message);
     
-                const gasEstimate = await contract.methods.sendMessage(selectedSender, encryptedMessage).estimateGas({ from: account });
-
+                // Generate HMAC for the encrypted message using the session key
+                const hmac = crypto.createHmac('md5', sessionKeyHex);  
+                hmac.update(encryptedMessage);
+                const hmacDigest = hmac.digest();
+    
+                // Concatenate the HMAC and encrypted message into a single buffer
+                const combinedMessage = Buffer.concat([hmacDigest, Buffer.from(encryptedMessage)]);
+    
+                // Estimate gas for the transaction
+                const gasEstimate = await contract.methods.sendMessage(selectedSender, combinedMessage.toString('hex')).estimateGas({ from: account });
                 setTimeout(() => {
                     // Update the UI after 10 seconds
                     console.log("10 seconds passed. Refreshing messages...");
-                    fetchMessagesForSender(selectedSender); // Fetch updated messages
+                    fetchMessagesForSender(selectedSender);
+                    fetchMessages(); // Fetch updated messages
                     setMessage("")
                 }, 20000); // Timer for 10 seconds
-    
                 // Send the transaction
-                const transactionPromise = contract.methods.sendMessage(selectedSender, encryptedMessage).send({ from: account, gas: gasEstimate + 100000 });
+                const transactionPromise = contract.methods.sendMessage(selectedSender, combinedMessage.toString('hex')).send({ from: account, gas: gasEstimate + 100000 });
                 fetchMessagesForSender(selectedSender); 
+                fetchMessages();
                 console.log("Transaction sent successfully.");
     
                 // Optionally handle the transaction result later
@@ -136,7 +155,6 @@ const App = () => {
                         console.error("Transaction Error:", error);
                         alert("Transaction failed: " + error.message);
                     });
-    
             } catch (error) {
                 console.error("Error:", error);
                 alert("Transaction failed: " + error.message);
@@ -144,9 +162,10 @@ const App = () => {
         } else {
             alert("Contract not initialized.");
         }
-    }
-    ;
+    };
+    
 
+    
     const fetchMessages = async () => {
         if (contract) {
             try {
@@ -183,9 +202,9 @@ const App = () => {
     };
 
     const fetchMessagesForSender = async (sender) => {
-
-        setSideBar(false)
-        setChatWindow(true)
+        setSideBar(false);
+        setChatWindow(true);
+        
         if (contract) {
             try {
                 const allMessages = await contract.methods.fetchAllMessagesForLoggedInAccount().call({ from: account });
@@ -211,9 +230,30 @@ const App = () => {
                     }
     
                     const rc4 = new RC4(sessionKeyHex);
-                    msg.content = rc4.decrypt(msg.content);
+    
+                    // Extract the HMAC and encrypted message from the received message
+                    const combinedMessage = Buffer.from(msg.content, 'hex');  
+                    const hmacLength = 16;
+                    const receivedHmac = combinedMessage.slice(0, hmacLength);  
+                    const receivedEncryptedMessage = combinedMessage.slice(hmacLength);  
+    
+                    // Recalculate the HMAC for the received encrypted message using the same session key
+                    const recalculatedHmac = crypto.createHmac('md5', sessionKeyHex);
+                    recalculatedHmac.update(receivedEncryptedMessage);
+                    const recalculatedHmacDigest = recalculatedHmac.digest();
+    
+                    // Compare the extracted HMAC with the recalculated HMAC
+                    if (receivedHmac.equals(recalculatedHmacDigest)) {
+                        // If HMAC verification is successful, decrypt the message
+                        msg.content = rc4.decrypt(receivedEncryptedMessage.toString());
+                    } else {
+                        console.error('HMAC verification failed. Message integrity compromised.');
+                        msg.content = '[Corrupted message]';
+                    }
                 }
     
+                const name = await getUserName(sender);
+                setSenderName(name);
                 setAllMessages(formattedMessages);
                 setSelectedSender(sender);
             } catch (error) {
@@ -224,13 +264,16 @@ const App = () => {
             alert("Contract not initialized.");
         }
     };
+    
+    
 
 
 
     const handleLogout = () => {
-        setAccount(null);
+        logout();
        
         navigate('/'); // Redirect to the homepage
+        console.log("logout")
     };
     const fetchRegisteredContacts = async () => {
         try {
@@ -339,27 +382,51 @@ setIsProfileModalOpen(false)
 
              {/*  header outside the chat container */}
              <div className="header">
-  <div className="profile-info">
-    <h2>Secure Chat App</h2>
+             <div className="profile-info"  onClick={handleProfileClick}>
+  
+             <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M12 4a8 8 0 0 0-6.96 11.947A4.99 4.99 0 0 1 9 14h6a4.99 4.99 0 0 1 3.96 1.947A8 8 0 0 0 12 4m7.943 14.076q.188-.245.36-.502A9.96 9.96 0 0 0 22 12c0-5.523-4.477-10-10-10S2 6.477 2 12a9.96 9.96 0 0 0 2.057 6.076l-.005.018l.355.413A9.98 9.98 0 0 0 12 22q.324 0 .644-.02a9.95 9.95 0 0 0 5.031-1.745a10 10 0 0 0 1.918-1.728l.355-.413zM12 6a3 3 0 1 0 0 6a3 3 0 0 0 0-6" clip-rule="evenodd"/></svg>
+
+    <p className="profile-text">Profile</p>
+  
+    </div> 
+    <div className='appname'> <h2>Secure Chat App</h2>
+   
   </div>
 
-  <div className="buttons-container">
-  <button onClick={sidebarfullscreen} className="sidebar-button">Chats</button>
-  <button onClick={handleAllContactsClick} className="sidebar-button">Contacts</button>
-  <button onClick={handleProfileClick} className="sidebar-button">Profile</button>
   
-  
+
+    <div className="header-buttons-container">
+  <div className="chat" onClick={sidebarfullscreen}>
+    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 20 20">
+      <path fill="currentColor" d="M5.8 12.2V6H2C.9 6 0 6.9 0 8v6c0 1.1.9 2 2 2h1v3l3-3h5c1.1 0 2-.9 2-2v-1.82a1 1 0 0 1-.2.021h-7zM18 1H9c-1.1 0-2 .9-2 2v8h7l3 3v-3h1c1.1 0 2-.899 2-2V3c0-1.1-.9-2-2-2"/>
+    </svg>
+    <p className="chat-text">Chats</p>
+  </div>
+
+  <div className="contacts" onClick={handleAllContactsClick}>
+    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24">
+      <path fill="currentColor" d="M4 2a1 1 0 0 0-1 1v2h2v2H2v2h3v2H2v2h3v2H2v2h3v2H3v2a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1zm5 14a3 3 0 1 1 6 0zm3-4a2 2 0 1 1 0-4a2 2 0 0 1 0 4"/>
+    </svg>
+    <p className="contacts-text">Contacts</p>
+  </div>
+</div>
+ 
    
     
-  </div>
+
 </div>
 
 {ChatWindow && (
             <div className="chat-container">
-           
+            <div className="chat-header">
+  <div className="sender-name">
+    {senderName}
+  </div>
+</div>
             <div className="chat-window" style={{ maxHeight: '100%', overflowY: 'auto' }}>
                 
-  
+           
+
 <ul className="messages">
     {(() => {
         const groupedMessages = groupMessagesByDate(allMessages);
@@ -407,21 +474,18 @@ setIsProfileModalOpen(false)
     )}
 
 {isProfileModalOpen && (
-    <div className="profilemodal">
-        
-            <h2>{username}</h2>
-            <div className="buttons-container">
-  <button onClick={closeProfileModal} className="sidebar-button">Cancel</button>
-  <button onClick={handleLogout} className="sidebar-button">Logout</button>
-  
-  
-  
-   
-    
+  <div className="profilemodal">
+  <div className="profile-header">
+  <h3 className="profile-username-label">Username:</h3>
+      <h2 className="profile-username">{username}</h2>
+      <h3 className="profile-account-label">Account Address:</h3>
+      <p className="profile-account">{account}</p>
   </div>
-            
-         
-    </div>
+  <div className="buttons-container">
+    <button onClick={closeProfileModal} className="sidebar-button cancel-button">Close</button>
+    <button onClick={handleLogout} className="sidebar-button logout-button">Logout</button>
+  </div>
+</div>
 )}
             {isModalOpen && (
     <div className="modal">

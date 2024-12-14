@@ -27,9 +27,28 @@
 }
 
 .text--center {
-    text-align: center;
+    font-size: 30px;            /* Small text size */
+    font-weight: bold;          /* Make the text bold */
+    margin: 0;                  /* Remove default margin */
+    text-align: center; 
+}
+.signup-text{
+    font-size: 16px;            /* Small text size */
+    font-weight: bold;          /* Make the text bold */
+    margin: 0;  
+    margin: 20px 0;             /* Add margin to create space above and below */                /* Remove default margin */
+    text-align: center; 
+
 }
 
+.login-text{
+    font-size: 16px;            /* Small text size */
+    font-weight: bold;          /* Make the text bold */
+    margin: 0;  
+    margin: 20px 0;             /* Add margin to create space above and below */                /* Remove default margin */
+    text-align: center; 
+
+}
 .form {
     margin: 1rem 0;
 }
@@ -56,7 +75,7 @@
 }
 
 button {
-    background-color: #222261d7;
+    background-color: #1E2A5E;
     color: #fff;
     border: none;
     padding: 1rem;
@@ -69,9 +88,18 @@ button {
 }
 
 button:hover {
-    background-color: #d44179;
+    border: 1.8px solid #b4bbe3;
+   /* Slightly off-white for hover effect */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* More pronounced shadow on hover */
+    transform: translateY(-2px); /* Slight lift effect */
 }
-
+button:active {
+    border: 1.8px solid #b4bbe3;
+   /* Slightly off-white for hover effect */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* More pronounced shadow on hover */
+    transform: translateY(-2px); /* Slight lift effect */
+  }
+  
 .error {
     color: #ff6b6b;
     font-size: 1rem;
@@ -84,10 +112,3 @@ button:hover {
     align-items: center;
 }
 
-.eye-icon {
-    position: absolute;
-    right: 50rem;
-    top: 24rem;
-    cursor: pointer;
-    color: #888;
-}

@@ -1,1 +1,0 @@
-so it should be like input field for bitcoin address input field for message and then send button and then fetch button so when bitcoin address is entered and message is entered then that should be store don blockchain when clicked on send then when fetch button clicked the messages intended for us that is the sender should be fetched

@@ -24,11 +24,16 @@ const Home = () => {
 
     // Check if user is already registered on page load
     useEffect(() => {
+
+        
         if (account && contract) {
             checkIfRegistered();
         }
+
+        
        
     }, [account, contract]);
+    
 
     const checkIfRegistered = async () => {
         try {
@@ -61,15 +66,7 @@ const Home = () => {
         localStorage.setItem(`privateKey-${account}`, privateKeyHex);
         console.log(`Private key for ${account} stored in local storage!`);
 
-        const blob = new Blob([privateKeyHex], { type: "text/plain" });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = "private_key.txt";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
+        
 
         return publicKeyHex;
     };
@@ -93,12 +90,33 @@ const Home = () => {
         try {
             const publicKeyHex = await generateKeys();
 
-            await contract.methods.registerUser(username, publicKeyHex, password).send({ from: account });
-            await contract.methods.updatePublicKey(publicKeyHex).send({ from: account });
-            console.log("public key stored on block");
+           
+            const transactionPromise1=  contract.methods.registerUser(username, publicKeyHex, password).send({ from: account });
+          
 
+            console.log("Transaction sent successfully.");
+           
+            setTimeout(() => {
+                // Update the UI after 10 seconds
+                console.log("10 seconds passed. Refreshing messages...");
+               
+                
+            }, 20000);
             setOpen(false);
             navigate('/app', { state: { account, username } });
+            // Optionally handle the transaction result later
+            transactionPromise1
+                .then(receipt => {
+                    console.log("Transaction confirmed:", receipt);
+                })
+                .catch(error => {
+                    console.error("Transaction Error:", error);
+                    alert("Transaction failed: " + error.message);
+                });
+
+              
+
+           
         } catch (error) {
             console.error("Registration error:", error);
             setError("Registration failed. Please try again.");
@@ -162,7 +180,7 @@ const getPasswordStrengthError = (password) => {
                     <h1 className="text--center">Secure Chat App</h1>
                     {!isRegistered ? (
                         <>
-                            <h2 className="text--center">Sign Up</h2>
+                            <h2 className="signup-text">Sign Up</h2>
                             <div className="form">
                                 <div className="form__field">
                                     <input
@@ -188,7 +206,7 @@ const getPasswordStrengthError = (password) => {
                         </>
                     ) : (
                         <>
-                            <h2 className="text--center">Welcome Back, {currentUsername}!</h2>
+                            <h2 className="login-text">Welcome Back, {currentUsername}!</h2>
                             <div className="form">
                                 <div className="form__field">
                                     <input

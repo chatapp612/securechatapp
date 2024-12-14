@@ -5,8 +5,8 @@
     flex-direction:column; /* Column layout for mobile */
     height: 100vh;
     background-color: #f1f3f4;
+  
 }
-
 
 /*-----------------------------------------------------------------------  Sidebar  ---------------------------------------------------------------------------*/
 
@@ -31,7 +31,7 @@
 }
 .senders-list li.selected {
     background-color: #dfdfe6ce; /* Light greenish background for selected sender */
-    border-color: #222261d7; /* Border color to match the highlight */
+    border-color: #1E2A5E; /* Border color to match the highlight */
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Slightly stronger shadow for selected */
 }
 .senders-list li {
@@ -81,149 +81,107 @@
     z-index: 10; /* Ensure header stays on top */
   }
   
-  /* Profile Info Section */
   .profile-info {
-    flex: 1; /* Take remaining space */
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: flex-start; /* Align profile text to the left */
+    justify-content: center;
+    color: white;
+    cursor: pointer;
   }
   
-  /* Profile text (username) styling */
-  .profile-info h2 {
-    font-size: 1rem; /* Smaller font for a cute and sleek appearance */
-    font-weight: bold;
-    color: rgb(255, 255, 255);
-    margin: 0;
-    padding: 0;
-    text-align: left; /* Align the username to the left */
+  .profile-icon {
+    color: white; /* White color for the icon */
+    
   }
-  
-  /* Container for buttons (All Contacts and Logout) */
-  .buttons-container {
-    display: flex;
-    justify-content: flex-end; /* Align buttons to the right */
-    gap: 10px; /* Reduce space between buttons for compactness */
-    align-items: center; /* Vertically center the buttons */
-  }
-
-  /* Container for logout icon and text */
-.logout-container {
-    display: flex;              /* Enable flexbox for alignment */
-    flex-direction: column;     /* Stack the icon and text vertically */
-    align-items: center;        /* Center-align both icon and text */
-    justify-content: center;    /* Center content within the container */
-    cursor: pointer;            /* Make the container clickable */
-    gap: 9px;                   /* Space between icon and text */
-    color: white;               /* Ensure text color is white */
-    transition: transform 0.2s ease; /* Add smooth hover effect */
-}
-
-/* Logout Icon */
-.logout-icon {
-    width: 30px;                /* Set icon size */
-    height: 30px;               /* Ensure it's square */
-    filter: invert(1);          /* Make the icon white */
-    transition: transform 0.2s ease, opacity 0.3s ease; /* Smooth hover effects */
-}
-
-/* Logout Text */
-.logout-text {
-    font-size: 12px;            /* Small text size */
-    font-weight: bold;          /* Make the text bold */
-    margin: 0;                  /* Remove default margin */
-    text-align: center;         /* Center-align the text */
-}
-
-/* Hover Effect */
-.logout-container:hover {
-    transform: scale(1.1);      /* Slight scaling on hover */
-}
-
-.logout-container:hover .logout-icon {
-    opacity: 0.8;               /* Slight transparency on hover */
-}
-
-/* Container for contacts icon and text */
-.all-contacts-container {
-    display: flex;              /* Enable flexbox for alignment */
-    flex-direction: column;     /* Stack the icon and text vertically */
-    align-items: center;        /* Center-align both icon and text */
-    justify-content: center;    /* Center content within the container */
-    cursor: pointer;            /* Make the container clickable */
-                   /* Space between icon and text */
-    color: white;               /* Ensure text color is white */
-    transition: transform 0.2s ease; /* Add smooth hover effect */
-}
-
-/* Contacts Icon */
-.all-contacts-icon {
-    width: 35px;                /* Set icon size */
-    height: 35px;               /* Ensure it's square */
-    filter: invert(1);          /* Make the icon white */
-    transition: transform 0.2s ease, opacity 0.3s ease; /* Smooth hover effects */
-}
-
-/* Contacts Text */
-.all-contacts-text {
-    font-size: 12px;            /* Small text size */
-    font-weight: bold;          /* Make the text bold */
-    margin: 0;                  /* Remove default margin */
-    text-align: center;         /* Center-align the text */
-}
-
-/* Hover Effect */
-.all-contacts-container:hover {
-    transform: scale(1.1);      /* Slight scaling on hover */
-}
-
-.all-contacts-container:hover .all-contacts-icon {
-    opacity: 0.8;               /* Slight transparency on hover */
-}
-
-
-/* Container for contacts icon and text */
-.profile-container {
-    display: flex;              /* Enable flexbox for alignment */
-    flex-direction: column;     /* Stack the icon and text vertically */
-    align-items: center;        /* Center-align both icon and text */
-    justify-content: center;    /* Center content within the container */
-    cursor: pointer;            /* Make the container clickable */
-    gap: 7px;                   /* Space between icon and text */
-    color: white;               /* Ensure text color is white */
-    transition: transform 0.2s ease; /* Add smooth hover effect */
-}
-
-/* Contacts Icon */
-.profile-icon {
-    width: 25px;                /* Set icon size */
-    height: 25px;               /* Ensure it's square */
-    filter: invert(1);          /* Make the icon white */
-    transition: transform 0.2s ease, opacity 0.3s ease; /* Smooth hover effects */
-}
-
-/* Contacts Text */
+  /* Contacts Text */
 .profile-text {
     font-size: 12px;            /* Small text size */
     font-weight: bold;          /* Make the text bold */
     margin: 0;                  /* Remove default margin */
     text-align: center;         /* Center-align the text */
 }
+.appname {
+    font-size: 12px;            /* Small text size */
+    font-weight: bold;          /* Make the text bold */
+    margin: 0;                  /* Remove default margin */
+    text-align: center;         /* Center-align the text */
+    display: flex;              /* Use flexbox to arrange the icon and text */
+    align-items: center;        /* Vertically align the items in the center */
+    padding-left: 10px;         /* Add some space between the profile icon and app name */
+  }
+.header-buttons-container {
+   
+ 
+    display: flex; /* Arrange buttons in a row */
+    justify-content: space-between; /* Space out the buttons */
+    gap:10px;
+    
+ 
+  }
 
-/* Hover Effect */
-.profile-container:hover {
-    transform: scale(1.1);      /* Slight scaling on hover */
-}
+  
+  .chat, .contacts {
 
-.profile-container:hover .profile-icon {
-    opacity: 0.8;               /* Slight transparency on hover */
-}
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    cursor: pointer;
+   
+  }
+  
+  .chat svg, .contacts svg {
+    color: white; /* White color for the icon */
+  }
+  
+  .chat-text, .contacts-text {
+    font-size: 12px;            /* Small text size */
+    font-weight: bold;          /* Make the text bold */
+    margin: 0;                  /* Remove default margin */
+    text-align: center;         /* Center-align the text */
+  }
+  .chat-header {
+    display: flex;
+    justify-content: center;  /* Center the content horizontally */
+    align-items: center;      /* Center the content vertically */
+  
+    background-color: #dddde2c4;  /* Light background */
+    border-radius: 10px; 
+   margin-bottom: 8px;       /* Optional rounded corners */
+  }
+  
+  .sender-name {
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+    padding: 5px;
+    background-color: #dddde2c4;  /* Light background for sender name */
+    border-radius: 5px;          /* Optional rounded corners */
+  }
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 /*-------------------------------------------------------------------------------Button------------------------------------------------------------------- */
   /* Button Styles */
   button {
-    background-color: #ea4c88; /* Soft pink for a cute feel */
+    background-color: #1E2A5E; 
     color: white;
     border: none;
     padding: 4px 10px; /* Smaller padding for a compact button look */
@@ -238,14 +196,18 @@
   
   /* Button Hover Effect */
   button:hover {
-    background-color: #d03d6c; /* Darker pink on hover for interactivity */
-    transform: scale(1.05); /* Slight scaling effect for a smooth hover feel */
+    border: 1.8px solid #b4bbe3;
+   /* Slightly off-white for hover effect */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* More pronounced shadow on hover */
+    transform: translateY(-2px); /* Slight lift effect */
   }
   
   /* Active Button Effect */
   button:active {
-    background-color: #15153c; /* Darker color when the button is clicked */
-    transform: scale(0.95); /* Slight shrinking effect on click */
+    border: 1.8px solid #b4bbe3;
+   /* Slightly off-white for hover effect */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* More pronounced shadow on hover */
+    transform: translateY(-2px); /* Slight lift effect */
   }
   
   /*-------------------------------------------------------------------------------Chat container -------------------------------------------------------------------- */
@@ -258,7 +220,7 @@
 }
 
   .chat-container {
-    width: 100%; /* Full width on mobile */
+    /* Full width on mobile */
     display: flex;
     flex-direction: column;
     height: 100%; /* Fill available height */
@@ -296,9 +258,9 @@ ul.messages {
     position: fixed;      /* Fixes the form to the bottom of the screen */
     bottom: 0;            /* Positions it at the bottom */
     left: 0%;            /* Aligns it to the left with the same padding as .chat-window */
-    width: 100%;           /* 100% width minus the left and right padding */
+    width: 94%;           /* 100% width minus the left and right padding */
     padding: 20px;
-    background-color: #f8f9fa;
+  
     display: flex;
     align-items: center;
     justify-content: space-between;  /* Aligns the input and button correctly */
@@ -333,38 +295,14 @@ ul.messages {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Pronounced shadow on focus */
 }
 
-/* Send Button */
-.send-button {
-    background-color: #ea4c88; /* Soft pink for the button */
-    color: white;
-    border: none;
-    padding: 5px 12px;         /* Small padding for a compact button */
-    font-size: 14px;           /* Keep text small */
-    font-weight: bold;
-    border-radius: 25px;       /* Rounded corners */
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth transitions */
-    box-sizing: border-box;
-    width: auto;               /* Ensures button is not stretched */
-}
 
-/* Send Button Hover Effect */
-.send-button:hover {
-    background-color: #d03d6c; /* Darker pink on hover */
-    transform: scale(1.05);     /* Slight scaling effect */
-}
 
-/* Send Button Active Effect */
-.send-button:active {
-    background-color: #15153c; /* Darker color when clicked */
-    transform: scale(0.95);     /* Shrinking effect when clicked */
-}
 .send-icon {
     width: 30px; /* Set the size of the send icon */
     height: 30px; /* Ensure the icon maintains a square aspect ratio */
     cursor: pointer; /* Changes cursor to pointer on hover */
     transition: transform 0.2s ease, opacity 0.3s ease; /* Smooth transition */
-    margin-left: 10px; /* Space between input and icon */
+    margin-left: 8px; /* Space between input and icon */
 }
 
 /* Send Icon Hover Effect */
@@ -380,9 +318,9 @@ ul.messages {
 
 .profilemodal {
     position: fixed;
-    top: 50px; /* Adjust distance below the profile icon */
-    right: 20px; /* Position near the right edge */
-    width: 300px; /* Compact width for the modal */
+    top: 70px; /* Adjust distance below the profile icon */
+    left: 20px; /* Position near the left edge */
+    width: 250px; /* Set a smaller width */
     height: auto; /* Dynamic height based on content */
     background-color: white; /* White background */
     border: 1px solid #ccc; /* Subtle border */
@@ -391,9 +329,48 @@ ul.messages {
     z-index: 1000; /* Ensure visibility above other elements */
     display: flex;
     flex-direction: column; /* Align content vertically */
-    padding: 10px; /* Internal spacing for content */
+    padding: 12px; /* Reduce padding to make it more compact */
     overflow: hidden; /* Hide overflowing content */
+    font-size: 0.875rem; /* Smaller font size for the modal */
 }
+
+/* Label Styling */
+.profile-username-label,
+.profile-account-label {
+    font-size: 0.875rem; /* Smaller font size for labels */
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 4px; /* Reduced space between label and value */
+}
+
+/* Username and Account Styling */
+.profile-username {
+    font-size: 1.25rem; /* Smaller font size for username */
+    font-weight: bold;
+    color: #1E2A5E;
+}
+
+.profile-account {
+    font-size: 0.6rem; /* Smaller font size for account info */
+    color: #666;
+    margin-top: 4px; /* Reduced space */
+}
+
+/* Buttons Container */
+.buttons-container {
+    display: flex;
+    justify-content: space-between; /* Space out the buttons */
+    gap: 8px; /* Smaller gap between buttons */
+    margin-top: 10px; /* Add top margin for spacing */
+}
+
+/* Button Styling (optional, add if needed) */
+.buttons-container .button {
+    background-color: #1E2A5E;
+    font-size: 0.875rem; /* Smaller font size for buttons */
+    padding: 6px 12px; /* Smaller padding for buttons */
+}
+
 
  /*------------------------------------------------------------------------------- Modal -------------------------------------------------------------------- */
 

@@ -57,41 +57,6 @@ function getAllRegisteredUsers() public view returns (address[] memory, string[]
 }
 
 
-    
-
-
-// Function to update the public key of the logged-in user
-function updatePublicKey(string memory publicKey) public returns (bool) {
-    // Check if the user is registered
-    require(bytes(users[msg.sender].username).length > 0, "User is not registered.");
-
-    // Update the public key in the User struct
-    users[msg.sender].publicKey = publicKey;
-
-    // Emit the PublicKeyUpdated event
-    emit PublicKeyUpdated(msg.sender, publicKey);
-
-    return true;
-}
-
-
-
-
-
-
-function changePassword(bytes32 newPasswordHash) public returns (bool) {
-    // Ensure user is registered
-    require(bytes(users[msg.sender].username).length > 0, "User not registered.");
-
-    // Update the password hash within the User struct
-    users[msg.sender].passwordHash = newPasswordHash;
-
-    return true;
-}
-
-
-
-
 // Function to get the public key of a specific address
 function getPublicKey(address user) public view returns (string memory) {
     return users[user].publicKey;
