@@ -130,7 +130,8 @@ const App = () => {
                     setMessage("");
                     fetchMessages();
                 }, 20000); 
-                await contract.methods.sendMessage(selectedSender, encryptedMessage).send({ from: account, gas: gasEstimate + 100000 });
+
+               
               // Timer for 10 seconds
 
               

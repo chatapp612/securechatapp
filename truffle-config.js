@@ -16,7 +16,7 @@ module.exports = {
         },
         providerOrUrl: "https://volta-rpc.energyweb.org",
         pollingInterval: 27000, 
-        timeoutBlocks: 270,
+        timeoutBlocks: 250,
       }),
       network_id: 73799, // holesky's network ID
       gas: 6000000, // Adjust gas limit as needed
