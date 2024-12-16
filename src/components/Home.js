@@ -99,11 +99,11 @@ const Home = () => {
             setTimeout(() => {
                 // Update the UI after 10 seconds
               
-               
+                setOpen(false);
+            navigate('/app', { state: { account, username } });
                 
             }, 20000);
-            setOpen(false);
-            navigate('/app', { state: { account, username } });
+           
             // Optionally handle the transaction result later
             transactionPromise1
                 .then(receipt => {
@@ -114,7 +114,7 @@ const Home = () => {
                     alert("Transaction failed: " + error.message);
                 });
 
-              
+            
 
            
         } catch (error) {

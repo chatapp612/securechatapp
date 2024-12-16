@@ -96,6 +96,7 @@ event MessageSent(address indexed recipient, string content, address indexed sen
 
 // Function to send a message to a specific recipient
 function sendMessage(address recipient, string memory content) public {
+    require(bytes(users[msg.sender].username).length > 0, "You must be a registered user to send messages."); // Check if sender is registered
     require(recipient != address(0), "Invalid recipient address.");
     messages.push(Message({
         recipient: recipient,

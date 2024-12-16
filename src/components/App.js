@@ -93,29 +93,29 @@ const App = () => {
    
     const deriveEncryptionKey = async () => {
         try {
-            console.log("r1");
-            console.log(selectedSender)
+          
+           
             const recipientPublicKeyHex = await contract.methods.getPublicKey(selectedSender).call({ from: account });
-            console.log("r2");
+           
             const privateKeyHex = localStorage.getItem(`privateKey-${account}`);
-            console.log("r3");
+        
             if (!privateKeyHex) {
                 throw new Error("Private key not found in localStorage.");
             }
-            console.log("r4");
+           
             const recipientPublicKey = sodium.from_hex(recipientPublicKeyHex);
-            console.log("r5");
+           
             const privateKey = sodium.from_hex(privateKeyHex);
-            console.log("r6");
+            
             const rawSecret = sodium.crypto_scalarmult(privateKey, recipientPublicKey);
             //BLAKE2B-subkeylen(key=key, message={}, salt=subkey_id || {0}, personal=ctx || {0})
-            console.log("r7");
+           
             const derivedKey = sodium.crypto_kdf_derive_from_key(32, 1, 'encryption', rawSecret);
             const key1 = `${account}_${selectedSender}`;
             const key2 = `${selectedSender}_${account}`;
             localStorage.setItem(key1, sodium.to_hex(derivedKey));
             localStorage.setItem(key2, sodium.to_hex(derivedKey));
-            console.log(derivedKey)
+           
             return sodium.to_hex(derivedKey);
         } catch (error) {
             alert("Error deriving encryption key:", error);
@@ -137,8 +137,7 @@ const App = () => {
                 if (!sessionKeyHex) {
                     sessionKeyHex = await deriveEncryptionKey();
                 }
-console.log("stored successfully")
-console.log(sessionKeyHex)
+
                 const rc4 = new RC4(sessionKeyHex);
                 const encryptedMessage = rc4.encrypt(message);
 
@@ -215,17 +214,17 @@ console.log(sessionKeyHex)
     };
 
     const fetchMessagesForSender = async (sender) => {
-        console.log("1");
+     
         setSideBar(false)
         setChatWindow(true)
-        console.log(sender)
+     
         setSelectedSender(sender);
-        console.log("1");
+       
         if (contract) {
             try {
-                console.log("in fms after try");
+               
                 const allMessages = await contract.methods.fetchAllMessagesForLoggedInAccount().call({ from: account });
-                console.log("after try try");
+                
                 const messagesWithSender = allMessages.filter(
                     msg => (msg.sender === sender && msg.recipient === account) || 
                            (msg.sender === account && msg.recipient === sender)
@@ -246,10 +245,9 @@ console.log(sessionKeyHex)
                     console.log(msg.content);
                     let sessionKeyHex = localStorage.getItem(`${account}_${sender}`) ||
                         localStorage.getItem(`${sender}_${account}`);
-                        console.log(sender)
-                        console.log("xyz",sessionKeyHex)
+                       
                     if (!sessionKeyHex) {
-                        console.log("before derivekey");
+                       
                         sessionKeyHex = await deriveEncryptionKey();
 
                     }
